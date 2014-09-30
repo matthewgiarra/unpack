@@ -6,11 +6,19 @@
 int main(int argc, char * argv[]){
 		
 	int bits_per_val_packed = 12;
-	int bytes_per_val_unpacked = (int) sizeof(uint16_t);
+	double bytes_per_val_unpacked = (int) sizeof(uint16_t);
 	int bits_per_byte = 8;
+	int height = 1024;
+	int width = 1024;
+	int nImages = 1;
 	
 	// Number of 8-bit byte chunks to read from the original data
-	double n_bytes_packed = 1024 * 1024 * 1;
+	double nPixels = height * width * nImages;
+	double n_bytes_unpacked = nPixels * (double)sizeof(uint16_t);
+	double n_bytes_packed 	= nPixels * (double) bits_per_val_packed / (double) bits_per_byte;
+	
+	// Inform user
+	printf("Packed bytes: %0.0f\t Unpacked bytes: %0.0f\n", n_bytes_packed, n_bytes_unpacked);
 	
 	// This is the bit number at which each 12-bit chunk of data starts
 	int start_bit_true = 0;
@@ -23,18 +31,18 @@ int main(int argc, char * argv[]){
 	
 	// Allocate space in which to open the source data
 	char *input_data;
-	input_data = malloc(n_bytes_packed * bytes_per_val_unpacked);
+	input_data = malloc(n_bytes_packed * sizeof(uint8_t));
 	
 	// Allocate space in which to save the new data
 	char *output_data;
-	output_data = malloc(n_bytes_packed * bytes_per_val_unpacked);
+	output_data = malloc(n_bytes_unpacked * sizeof(uint8_t));
 	
-	// Allocate space for the 16-bit values
+	// Allocate space for the two 8-bit values that make up each 16-bit value
 	char *data_bytes;
-	data_bytes = malloc(sizeof(uint16_t));
+	data_bytes = malloc((double)sizeof(uint16_t) * sizeof(uint8_t));
 	
 	// Tell the user what's going on	
-	printf("Unpacking %s\n", argv[1]);
+	// printf("Unpacking %s\n", argv[1]);
 	
 	// Pointer to file
 	FILE *input_file;
@@ -49,11 +57,8 @@ int main(int argc, char * argv[]){
 	// Read the file
 	fread(input_data, 1, n_bytes_packed, input_file);
 
-	// Inform the user
-	printf("Unpacking %0.0f bytes\n", n_bytes_packed);
-
 	// Extract the 12-bit bytes out of the array
-	for(int k = 0; k < n_bytes_packed; k++){
+	for(int k = 0; k < nPixels; k++){
 		
 		// True bit number of the start byte 
 		start_bit_true = k * bits_per_val_packed;
@@ -64,29 +69,47 @@ int main(int argc, char * argv[]){
 		// Avoid divison by zero
 		if(start_byte > 0)
 			bitShift = fmod(start_bit_true, bits_per_byte * start_byte);
+
+		// Populate the new bytes
+		data_bytes[0] = (input_data[start_byte] << bitShift) | (input_data[start_byte + 1] >> (bits_per_byte - bitShift));
+		data_bytes[1] = (input_data[start_byte + 1] << bitShift) & ((int)(pow(2, bits_per_byte)-1) << (bits_per_val_packed - bits_per_byte));
 		
-		// Case if bit shift is nonzer
-		if(bitShift > 0){
-			// Shift the bits
-			data_bytes[0] = input_data[start_byte] << (bitShift) & ~(input_data[start_byte + 1] >> (bits_per_byte - bitShift));
-			data_bytes[1] = input_data[start_byte + 1] << bitShift;	
-		}
-		else{
-			// Shift and invert the second byte but not the first bit
-			data_bytes[0] = input_data[start_byte];
-			data_bytes[1] = ~(input_data[start_byte + 1] >> (bits_per_byte - bitShift));			
-			}
+		// printf("%d\n--\n", k);
+		// for(int b = 0; b<bits_per_byte; b++){
+		// 	printf("%d", (input_data[start_byte + 1] << bitShift & 128 >> b) > 0);
+		// }
+		// printf("\n");
+		//
+		// for(int b = 0; b<bits_per_byte; b++){
+		// 	printf("%d", (((int)(pow(2, bits_per_byte)-1) << (bits_per_val_packed - bits_per_byte)) & 128 >>b ) > 0 );
+		// }
+		// printf("\n");
+		//
+		//
+		// for(int b = 0; b < bits_per_byte; b++){
+		// 	printf("%d", (data_bytes[1] & (128 >> b)) > 0);
+		// }
+		// printf("\n\n");
 			
-			// Write the bytes to the output array
-			output_data[2 * k] = data_bytes[0];
-			output_data[2 * k - 1] = data_bytes[1];
-		}
-	
-	
+		// printf("%d\n--\n%d\n%d\n%d\n\n", k, input_data[start_byte + 1] << bitShift, bits_per_byte << (bits_per_val_packed - bits_per_byte), data_bytes[1]);
+
+		// printf("Pixel %d Start bit: %d\tRead bytes: %d %d\tbitShift: %d\t", k, start_bit_true, start_byte, start_byte+1, bitShift);
+		// printf("Input bytes: %d %d\t", input_data[start_byte], input_data[start_byte + 1]);
+		//
+		//
+		// printf("Data bytes: %d %d\n", data_bytes[0], data_bytes[1]);
+		
+		// Write the bytes to the output array
+		output_data[2 * k] = data_bytes[0];
+		output_data[2 * k + 1] = data_bytes[1];
+		
+		// printf("Output bits: %d and %d\n", 2*k, 2*k+1);
+	}
+		
 		// Inform user
 		printf("Writing file %s\n", argv[2]);
 		// Write the output file
-		fwrite(output_data, 1, n_bytes_packed, output_file);
+		fwrite(output_data, 1, n_bytes_unpacked, output_file);
 		
 		// Close files
 		fclose(input_file);

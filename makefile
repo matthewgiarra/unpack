@@ -9,4 +9,4 @@ clean:
 run:
 	make clean
 	make
-	./unpack /Volumes/Socha_MP7/giarra_grasshopper_2014-07-21/mng-1-161-A_C001H001S0001/mng-1-161-A_C001H001S0001.mraw ~/Desktop/data.bin
+	./unpack ~/Desktop/mng-1-161-A/mng-1-161-A.mraw ~/Desktop/mng-1-161-A/mng-1-161-A.bin
