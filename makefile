@@ -9,4 +9,4 @@ clean:
 run:
 	@make clean
 	@make
-	@./unpack ~/Desktop/mng-1-161-A/mng-1-161-A.mraw ~/Desktop/mng-1-161-A/mng-1-161-A.bin
+	@./unpack ~/Desktop/mng-1-161-A/mng-1-161-A.mraw ~/Desktop/mng-1-161-A/mng-1-161-A.bin 1024 1024 10 12

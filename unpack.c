@@ -3,23 +3,61 @@
 #include <stdlib.h>
 #include <math.h>
 
+
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KWHT  "\x1B[37m"
+#define RESET "\033[0m"
+
 // This function unpacks 12-bit data into 16-bit data.
 // At least that's the plan.
 
 int main(int argc, char * argv[]){
 	
 	// Data size variables from input
-	// int height = atoi(argv[3]);
-	// int width = atoi(argv[4]);
-	// int nImages = atoi(argv[5]);
-	// int bits_per_val_packed = atoi(argv[6]);
+	
+	// Height and width of the images in pixels
+	int height = atoi(argv[3]);
+	int width = atoi(argv[4]);
+	
+	// Number of images
+	int nImages = atoi(argv[5]);
+	
+	// Number of bits per pixel value in the input data
+	int bits_per_val_packed = atoi(argv[6]);
+
+	// Pointers to files
+	FILE *input_file;
+	FILE *output_file;
+	
+	// Open the input file for reading
+	input_file = fopen(argv[1], "r");
+	
+	// Bug out if the input file isn't found
+	if(input_file == NULL){
+		printf(KRED "Error: failed to load file" KBLU " %s\n" RESET, argv[1]);
+		return(-1);
+	}
+	
+	// Open an output file for writing, discarding any existing contents
+	output_file = fopen(argv[2], "w");		
+	
+	// Bug out if the output file couldn't be opened.	
+	if(output_file == NULL){
+		printf(KRED "Error: failed to create output file " KBLU "%s\n" RESET, argv[2]);
+		return(-1);
+	}
 		
-	int bits_per_val_packed = 12;
+	// Bytes per unpacked value (8 or 16 usually)	
 	int bytes_per_val_unpacked = (int)sizeof(uint8_t);
+	
+	// Bits per byte (should always be 8)
 	int bits_per_byte = 8;
-	int height = 1024;
-	int width = 1024;
-	int nImages = 10;
 	
 	// Number of pixel values in the whole data set (image dimensions * number of images)
 	double nPixels = height * width * nImages;
@@ -29,9 +67,6 @@ int main(int argc, char * argv[]){
 	
 	// Number of 8-bit bytes in the raw file
 	double n_bytes_packed = nPixels * bits_per_val_packed / bits_per_byte;
-	
-	// Inform user
-	printf("Packed bytes: %0.0f\t Unpacked bytes: %0.0f\n", n_bytes_packed, n_bytes_unpacked);
 	
 	// This is the bit number at which each 12-bit chunk of data starts
 	int start_bit_true = 0;
@@ -54,19 +89,13 @@ int main(int argc, char * argv[]){
 	uint8_t LOWER_BYTE;
 	uint8_t UPPER_BYTE;
 		
-	// Pointers to files
-	FILE *input_file;
-	FILE *output_file;
-	
-	// Open the input file for reading
-	input_file = fopen(argv[1], "r");
-	
-	// Open an output file for writing, discarding any existing contents
-	output_file = fopen(argv[2], "w");		
-		
+	// Inform the user
+	printf("Reading file " KBLU "%s\n" RESET, argv[1]);
 	// Read the input binary file in 8-bit chunks
 	fread(input_data, (int)sizeof(uint8_t), n_bytes_packed, input_file);
 
+	// Variable to store the number of the image being unpacked.
+	// Use double because this can get large.
 	double image_num;
 	
 	// Extract the 12-bit bytes out of the array
@@ -74,10 +103,11 @@ int main(int argc, char * argv[]){
 		
 		// Current image number
 		image_num = (double)k / ( (double)width * (double)height) + 1;
-		
+
 		// Print a message at the start of each new image.
-		if(fmod(image_num, 1) == 0)
-			printf("Image %0.0f of %d\n",  image_num, nImages);
+		if(fmod(image_num, 1) == 0){
+			printf("Unpacking image %0.0f of %d...\n",  image_num, nImages);
+		}
 		
 		// Bit number of the start byte within the whole array
 		start_bit_true = k * bits_per_val_packed;
@@ -102,15 +132,12 @@ int main(int argc, char * argv[]){
 		LOWER_BYTE = (input_data[start_byte + 1] << bitShift) & ((uint8_t)(pow(2, bits_per_byte) - 1) << ((int)bits_per_val_packed - (int)bits_per_byte));
 		
 		// Assign the 16-bit output byte to the output data array.
-		// output_data[2 * k] = LOWER_BYTE;
-		// output_data[2 * k + 1]  = UPPER_BYTE;
-				
 		output_data[2 * k] = LOWER_BYTE;
-		output_data[2 * k + 1]  = UPPER_BYTE;
-				
+		output_data[2 * k + 1]  = UPPER_BYTE;		
 	}
 		
 	// Write the output file
+	printf("Writing %d images to file " KBLU "%s\n" RESET, nImages, argv[2]);
 	fwrite(output_data, (int)sizeof(uint8_t), 2 * nPixels, output_file);
 		
 	// Close files
