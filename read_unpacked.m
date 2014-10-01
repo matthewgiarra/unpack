@@ -21,7 +21,7 @@ data = fread(fid, imageHeight * imageWidth * nImages, 'uint16');
 data_mat = reshape(data, imageHeight, imageWidth, nImages);
 % 
 % % Display the first image
-imagesc(uint16(data_mat(:, :, 1))); axis image; colormap gray;
+imagesc(uint16(data_mat(:, :, 1)')); axis image; colormap gray;
 
 
 fclose(fid);
