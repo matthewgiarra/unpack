@@ -1,6 +1,6 @@
 
 fclose all;
-binDir = '~/Desktop/mng-1-161-A';
+binDir = '/Users/matthewgiarra/Documents/School/VT/Research/EFRI/Data/argonne_2014/mng-1-161-A/';
 binName = 'mng-1-161-A';
 binExt = '.bin';
 
