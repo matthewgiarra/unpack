@@ -15,41 +15,32 @@
 
 // This function unpacks 12-bit data into 16-bit data.
 // At least that's the plan.
-// USAGE: uint8_t *8_BIT_BINARY_DATA =  unpack(char* INPUT_FILE_PATH, char* OUTPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, int NUMBER_OF_IMAGES, int BITS_PER_PIXEL_PACKED)
+// USAGE: unpack_12To16(char* INPUT_FILE_PATH, char* OUTPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, int NUMBER_OF_IMAGES)
 
-int main(int argc, char * argv[]){
+int unpack_12To16( char *INPUT_FILE_PATH, char *OUTPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, int NUMBER_OF_IMAGES){
 	
-	// Data size variables from input
-	
-	// Height and width of the images in pixels
-	int height = atoi(argv[3]);
-	int width = atoi(argv[4]);
-	
-	// Number of images
-	int nImages = atoi(argv[5]);
-	
-	// Number of bits per pixel value in the input data
-	int bits_per_val_packed = atoi(argv[6]);
+	// Number of bits per pixel value in the input data	
+	int bits_per_val_packed = 12;
 
 	// Pointers to files
 	FILE *input_file;
 	FILE *output_file;
 	
 	// Open the input file for reading
-	input_file = fopen(argv[1], "r");
+	input_file = fopen(INPUT_FILE_PATH, "r");
 	
 	// Bug out if the input file isn't found
 	if(input_file == NULL){
-		printf(KRED "Error: failed to load file" KBLU " %s\n" RESET, argv[1]);
+		printf(KRED "Error: failed to load file" KBLU " %s\n" RESET, INPUT_FILE_PATH);
 		return(-1);
 	}
 	
 	// Open an output file for writing, discarding any existing contents
-	output_file = fopen(argv[2], "w");		
+	output_file = fopen(OUTPUT_FILE_PATH, "w");		
 	
 	// Bug out if the output file couldn't be opened.	
 	if(output_file == NULL){
-		printf(KRED "Error: failed to create output file " KBLU "%s\n" RESET, argv[2]);
+		printf(KRED "Error: failed to create output file " KBLU "%s\n" RESET, OUTPUT_FILE_PATH);
 		return(-1);
 	}
 		
@@ -60,7 +51,7 @@ int main(int argc, char * argv[]){
 	int bits_per_byte = 8;
 	
 	// Number of pixel values in the whole data set (image dimensions * number of images)
-	double nPixels = height * width * nImages;
+	double nPixels = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS * NUMBER_OF_IMAGES;
 	
 	// Number of 8-bit bytes in the output file.
 	double n_bytes_unpacked = (int)sizeof(uint16_t) * nPixels;
@@ -87,14 +78,14 @@ int main(int argc, char * argv[]){
 	uint8_t UPPER_BYTE;
 		
 	// Inform the user
-	printf("Reading file " KBLU "%s\n" RESET, argv[1]);
+	printf("Reading file " KBLU "%s\n" RESET, INPUT_FILE_PATH);
 	
 	// Read the input binary file in 8-bit chunks
 	fread(input_data, (int)sizeof(uint8_t), n_bytes_packed, input_file);
 
 	// Variable to store the number of the image being unpacked.
 	// Use double because this can get large.
-	printf("Unpacking %d images containing %0.0f pixels\n", nImages, nPixels);
+	printf("Unpacking %d images containing %0.0f pixels\n", NUMBER_OF_IMAGES, nPixels);
 	
 	// Initialize timer variables
 	time_t tstart, tend;
@@ -143,7 +134,7 @@ int main(int argc, char * argv[]){
 	printf("Time in loop: %f seconds\n", difftime(tend, tstart));
 		
 	// Write the output file
-	printf("Writing %d images to file " KBLU "%s\n" RESET, nImages, argv[2]);
+	printf("Writing %d images to file " KBLU "%s\n" RESET, NUMBER_OF_IMAGES, OUTPUT_FILE_PATH);
 	fwrite(output_data, (int)sizeof(uint8_t), 2 * nPixels, output_file);
 		
 	// Close files
@@ -153,10 +144,41 @@ int main(int argc, char * argv[]){
 	// Free memory
 	free(input_data);
 	free(output_data);
+	
+	// Return success/fail
+	return(0);
 			
+}
+
+int main(int argc, char *argv[]){
+	
+	// File paths
+	char *INPUT_FILE_PATH = argv[1];
+	char *OUTPUT_FILE_PATH = argv[2];
+	
+	// Height and width of the images in pixels
+	int IMAGE_HEIGHT_PIXELS = atoi(argv[3]);
+	int IMAGE_WIDTH_PIXELS = atoi(argv[4]);
+	
+	// Number of images
+	int NUMBER_OF_IMAGES = atoi(argv[5]);
+	
+	// Unpack the binary file
+	unpack_12To16(INPUT_FILE_PATH, OUTPUT_FILE_PATH, IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, NUMBER_OF_IMAGES);
+	
 	// GTFO
 	return(0);
+	
 }
+
+
+
+
+
+
+
+
+
 
 
 
