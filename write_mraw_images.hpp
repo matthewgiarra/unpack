@@ -90,11 +90,9 @@ int write_mraw_12to16( char *INPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE
 	// Start a timer
 	tstart = time(0);
 	
-	// Bit shift offset constant
+	// Bit shift offset constant. This is the offset from the 
+	//beginning of each byte  that start-bits may occur.
 	const int bit_shift_constant = (2 * bytes_per_val_unpacked * bits_per_byte) - bits_per_val_packed;
-
-	// Display
-	printf("Bit shift constant: %d\n", bit_shift_constant);
 
 	// Make an image in opencv 
 	Mat slice(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, CV_16UC1);
@@ -112,11 +110,19 @@ int write_mraw_12to16( char *INPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE
 	int start_byte;
 	
 	// Counter
-	int k;
+	// int k;
 	int start_pixel, end_pixel;	
 	
+	// File name stuff
+	string dir = "/Users/matthewgiarra/Desktop/images/";
+	string base = "image_";
+	string ext = ".tif";
+	string file_path;
+	char numstr[5];
+	
+	// Loop over all the images specified, saving each one as a TIFF.
 	for(int n = 0; n < number_of_images; n++){
-		
+				
 		// Start and end pixels
 		start_pixel = pixels_per_image * n;
 		end_pixel  	= start_pixel + (pixels_per_image - 1);
@@ -126,13 +132,10 @@ int write_mraw_12to16( char *INPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE
 		
 		// Index of the first relevant 8-byte within the binary
 		start_byte = floor(start_bit / bits_per_byte);
-		// Extract the 12-bit bytes out of the array
 		
-		printf("Start pixel: %d\t\tEnd pixel: %d\t\tStart byte: %d\n", start_pixel, end_pixel, start_byte);
-		
-		for(k = start_pixel; k < end_pixel; k++){
-		// for(k = 0; k < (nPixels); k++){
-		
+		// Extract the 12-bit bytes out of the array for each image.	
+		for(int k = start_pixel; k < end_pixel; k++){
+					
 			// Bit shift
 			bitShift = bit_shift_constant * (k % 2);
 		
@@ -159,19 +162,34 @@ int write_mraw_12to16( char *INPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE
 		}
 		
 		// Show the image
-		imshow("Display Image", slice);
+		// imshow("Display Image", slice);
 		
 		// Hold your horses
-		waitKey(200);
+		// waitKey(60);
+	
+		// Build save name
+		sprintf(numstr, "%05.0f", (float)n + 1);
 		
-		printf("Loop %d complete!\n", n);
+		// Inform user
+		file_path = dir + base + numstr + ext;
+		
+		// Print the file name being saved
+		printf("Saving file:" KBLU "%s\n" RESET, file_path.c_str());
+		
+		// Write the first image
+		imwrite(file_path, slice);
+		
 	}
 	// End time
 	tend = time(0);
-
-	// Write the output file
-	// printf("Writing %d images to file " KBLU "%s\n" RESET, number_of_images, OUTPUT_FILE_PATH);
-	// fwrite(output_data, (int)sizeof(uint8_t), 2 * nPixels, output_file);
+	
+	// Elapsed time
+	int elapsed = (int)tend - (int)tstart;
+	
+	// Display success
+	printf("Saved " KGRN "%d " RESET "images " \
+		"in " KGRN "%d " RESET "seconds " \
+			"\nSave directory: " KGRN "%s\n" RESET, number_of_images, elapsed, dir.c_str());
 
 	// Close files
 	fclose(input_file);
