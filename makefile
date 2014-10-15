@@ -12,6 +12,4 @@ clean:
 	@rm -f $(PROGRAM)
 	
 run:
-	# @make clean
-	# make
-	./$(PROGRAM) $(DATA_DIR)/mng-1-161-A.mraw 1024 1024 1 1 3
+	@./$(PROGRAM) $(DATA_DIR)/mng-1-161-A.mraw 1024 1024 1 100 3

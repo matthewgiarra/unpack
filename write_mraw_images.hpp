@@ -32,10 +32,12 @@ int write_mraw_12to16( char *INPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE
 	// Number of pixel values in the whole data set (image dimensions * number of images)
 	double nPixels = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS * number_of_images;
 	
+	// Pixels per image
+	int pixels_per_image = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS;
+	
 	// Variable to store the number of the image being unpacked.
 	// Use double because this can get large.
-	printf("Unpacking %d images containing %0.0f pixels\n", number_of_images, nPixels);
-	
+	printf("Unpacking %d images containing %0.0f pixels (%d pixels per image)\n", number_of_images, nPixels, pixels_per_image);
 
 	// Number of bits per pixel value in the input data
 	int bits_per_val_packed = 12;
@@ -63,9 +65,8 @@ int write_mraw_12to16( char *INPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE
 
 	// Number of 8-bit bytes in the raw file
 	double n_bytes_packed = nPixels * bits_per_val_packed / bits_per_byte;
-
-	// This is the byte number containing the first bit in each 12-bit chunk of data.
-	int start_byte = 0;
+	
+	printf("Read %0.0f bytes\n", n_bytes_packed);
 
 	// Bit shift variable
 	int bitShift = 0;
@@ -73,16 +74,12 @@ int write_mraw_12to16( char *INPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE
 	// Allocate space in which to open the source data
 	uint8_t *input_data = (uint8_t*) malloc(n_bytes_packed * sizeof(uint8_t));
 
-	// Allocate space in which to save the new data
-	// uint8_t *output_data;
-	// output_data = malloc(n_bytes_unpacked * sizeof(uint8_t));
-
 	// Initialize the two 8-bit values that make up each 16-bit value
 	uint8_t LOWER_BYTE;
 	uint8_t UPPER_BYTE;
 
 	// Inform the user
-	printf("Reading file " KBLU "%s\n" RESET, INPUT_FILE_PATH);
+	// printf("Reading file " KBLU "%s\n" RESET, INPUT_FILE_PATH);
 
 	// Read the input binary file in 8-bit chunks
 	fread(input_data, (int)sizeof(uint8_t), n_bytes_packed, input_file);
@@ -92,12 +89,6 @@ int write_mraw_12to16( char *INPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE
 
 	// Start a timer
 	tstart = time(0);
-	
-	// Start bit within the binary file
-	int start_bit = bits_per_val_packed * IMAGE_WIDTH_PIXELS * IMAGE_HEIGHT_PIXELS * (START_IMAGE);
-
-	// Start byte (8-bit) within the binary file
-	start_byte = 2 * (start_bit % 2) + (1 - start_bit % 2);
 	
 	// Bit shift offset constant
 	const int bit_shift_constant = (2 * bytes_per_val_unpacked * bits_per_byte) - bits_per_val_packed;
@@ -113,43 +104,70 @@ int write_mraw_12to16( char *INPUT_FILE_PATH, int IMAGE_HEIGHT_PIXELS, int IMAGE
 
 	// Make a window
 	namedWindow("Display Image", WINDOW_AUTOSIZE);
-
-	// Extract the 12-bit bytes out of the array
-	for(int k = start_byte; k < nPixels; k++){
+	
+	// This is the bit within the binary file.
+	int start_bit = 0;
+	
+	// This is the byte number containing the first bit in each 12-bit chunk of data.
+	int start_byte;
+	
+	// Counter
+	int k;
+	int start_pixel, end_pixel;	
+	
+	for(int n = 0; n < number_of_images; n++){
 		
-		// Bit shift
-		bitShift = bit_shift_constant * (k % 2);
-
-		// Populate the new bytes
-		// Most significant bits (MSB) in big-endian format.
-		// This shifts the first 8-bit byte to the left by BITSHIFT bits, and then
-		// concatonates it with the first (BITS_PER_BYTE - BITSHIFT) bits of the subsequent byte.
-		UPPER_BYTE = (input_data[start_byte] << bitShift) | (input_data[start_byte + 1] >> (bits_per_byte - bitShift));
-
-		// Least significant bit (LSB) in bit-endian format.
-		// This shifts the second 8-bit byte by (8 - bitShift) bits to the left
-		// and then truncates its to the first (bits_per_val_packed - bits_per_byte) bits
-		// (e.g. bits_per_val_packed = 12; bits_per_byte = 8; so the second 8-bit byte is truncated to the first (12-8) = 4 bits).
-		LOWER_BYTE = (input_data[start_byte + 1] << bitShift) & (255 << (bits_per_val_packed - bits_per_byte));
-
-		// Combine 8-bit bytes into 16-bit byte
-		pixel_val = ((((uint16_t) 0 | UPPER_BYTE) << 8  ) | ((uint16_t) 0 | LOWER_BYTE)) << PIXEL_BIT_SHIFT;
+		// Start and end pixels
+		start_pixel = pixels_per_image * n;
+		end_pixel  	= start_pixel + (pixels_per_image - 1);
 		
-		// Assign the pixel value to the image.
-		slice.at<uint16_t>(k) = pixel_val;
+		// Start bit within the binary file
+		start_bit = bits_per_val_packed * start_pixel;
+		
+		// Index of the first relevant 8-byte within the binary
+		start_byte = floor(start_bit / bits_per_byte);
+		// Extract the 12-bit bytes out of the array
+		
+		printf("Start pixel: %d\t\tEnd pixel: %d\t\tStart byte: %d\n", start_pixel, end_pixel, start_byte);
+		
+		for(k = start_pixel; k < end_pixel; k++){
+		// for(k = 0; k < (nPixels); k++){
+		
+			// Bit shift
+			bitShift = bit_shift_constant * (k % 2);
+		
+			// Populate the new bytes
+			// Most significant bits (MSB) in big-endian format.
+			// This shifts the first 8-bit byte to the left by BITSHIFT bits, and then
+			// concatonates it with the first (BITS_PER_BYTE - BITSHIFT) bits of the subsequent byte.
+			UPPER_BYTE = (input_data[start_byte] << bitShift) | (input_data[start_byte + 1] >> (bits_per_byte - bitShift));
 
-		// Increment the start byte.
-		start_byte += 2 * (k % 2) + 1 * (1 - k % 2);
+			// Least significant bit (LSB) in bit-endian format.
+			// This shifts the second 8-bit byte by (8 - bitShift) bits to the left
+			// and then truncates its to the first (bits_per_val_packed - bits_per_byte) bits
+			// (e.g. bits_per_val_packed = 12; bits_per_byte = 8; so the second 8-bit byte is truncated to the first (12-8) = 4 bits).
+			LOWER_BYTE = (input_data[start_byte + 1] << bitShift) & (255 << (bits_per_val_packed - bits_per_byte));
+
+			// Combine 8-bit bytes into 16-bit byte
+			pixel_val = ((((uint16_t) 0 | UPPER_BYTE) << 8  ) | ((uint16_t) 0 | LOWER_BYTE)) << PIXEL_BIT_SHIFT;
+		
+			// Assign the pixel value to the image.
+			slice.at<uint16_t>(k-start_pixel) = pixel_val;
+
+			// Increment the start byte.
+			start_byte += 2 * (k % 2) + 1 * (1 - k % 2);
+		}
+		
+		// Show the image
+		imshow("Display Image", slice);
+		
+		// Hold your horses
+		waitKey(200);
+		
+		printf("Loop %d complete!\n", n);
 	}
-
-	imshow("Display Image", slice);
-	waitKey(0);
-
 	// End time
 	tend = time(0);
-
-	// Display time
-	printf("Time in loop: %f seconds\n", difftime(tend, tstart));
 
 	// Write the output file
 	// printf("Writing %d images to file " KBLU "%s\n" RESET, number_of_images, OUTPUT_FILE_PATH);
