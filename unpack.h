@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdint.h>
 
 // Text color definitions
 #define KNRM  "\x1B[0m"
@@ -50,8 +51,11 @@ int unpack_12To16( char *INPUT_FILE_PATH, char *OUTPUT_FILE_PATH, int IMAGE_HEIG
 	// Bits per byte (should always be 8)
 	int bits_per_byte = 8;
 
+	// Image size (pixels)
+	uint32_t imSize = IMAGE_WIDTH_PIXELS*IMAGE_HEIGHT_PIXELS;
+
 	// Number of pixel values in the whole data set (image dimensions * number of images)
-	double nPixels = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS * NUMBER_OF_IMAGES;
+	uint64_t nPixels = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS * NUMBER_OF_IMAGES;
 
 	// Number of 8-bit bytes in the output file.
 	double n_bytes_unpacked = (int)sizeof(uint16_t) * nPixels;
@@ -101,9 +105,12 @@ int unpack_12To16( char *INPUT_FILE_PATH, char *OUTPUT_FILE_PATH, int IMAGE_HEIG
 
 	printf("Bit shift constant: %d\n", bit_shift_constant);
 
-	// Extract the 12-bit bytes out of the array
-	for(int k = 0; k < nPixels; k++){
+	//Progress Bar updates every 1%:
+	int bar_update = NUMBER_OF_IMAGES/50;
 
+	// Extract the 12-bit bytes out of the array
+	for(uint64_t k = 0; k < nPixels; k++){
+		
 		// Bit shift
 		bitShift = bit_shift_constant * (k % 2);
 
@@ -125,14 +132,31 @@ int unpack_12To16( char *INPUT_FILE_PATH, char *OUTPUT_FILE_PATH, int IMAGE_HEIG
 
 		// Increment the start byte.
 		start_byte = start_byte + 2 * (k % 2) + 1 * (1 - k % 2);
+
+		//Progess bar
+		if(k % imSize == 0){
+			uint32_t imnum = k / imSize;
+			
+			printf("%d/%d[", imnum, NUMBER_OF_IMAGES);
+			for(int i = 0; i <= 50; i++){
+				if(i <= imnum/bar_update){
+					printf("=");
+				}	
+				else{ 
+					printf(" ");
+				}
+			}
+			printf("] %d%%\r", (imnum * 100) / NUMBER_OF_IMAGES);
+			fflush(stdout);
+		}
 	}
 
 	// End time
 	tend = time(0);
 
 	// Display time
-	printf("Time in loop: %f seconds\n", difftime(tend, tstart));
-
+	printf("\nTime in loop: %f seconds\n", difftime(tend, tstart));
+		
 	// Write the output file
 	printf("Writing %d images to file " KBLU "%s\n" RESET, NUMBER_OF_IMAGES, OUTPUT_FILE_PATH);
 	fwrite(output_data, (int)sizeof(uint8_t), 2 * nPixels, output_file);
