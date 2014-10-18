@@ -14,8 +14,7 @@ int main(int argc, char *argv[]){
 	int START_IMAGE = atoi(argv[4]);
 	int END_IMAGE = atoi(argv[5]);
 	int BIT_SHIFT = atoi(argv[6]);
-	
-	
+		
 	// Extract images
 	write_mraw_12to16(INPUT_FILE_PATH, IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, START_IMAGE, END_IMAGE, BIT_SHIFT);
 	
