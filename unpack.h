@@ -171,5 +171,5 @@ int unpack_12To16( char *INPUT_FILE_PATH, char *OUTPUT_FILE_PATH, int IMAGE_HEIG
 
 	// Return success/fail
 	return(0);
-
+	
 }
