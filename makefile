@@ -11,4 +11,5 @@ clean:
 	@rm -f $(PROGRAM)
 	@rm -rf *dSYM
 run:
-	@./$(PROGRAM) $(DATA_DIR)/mng-1-161-A.mraw 1024 1024 101 101 3
+	@./$(PROGRAM) $(DATA_DIR)/mng-1-161-A.mraw 1024 1024 1 100 3
+	#@./$(PROGRAM) $(DATA_DIR)/mng-1-161-A.mraw $(DATA_DIR)/mng-1-161-A.bin 1024 1024 10

@@ -52,7 +52,7 @@ int unpack_12To16( char *INPUT_FILE_PATH, char *OUTPUT_FILE_PATH, int IMAGE_HEIG
 	int bits_per_byte = 8;
 
 	// Image size (pixels)
-	uint32_t imSize = IMAGE_WIDTH_PIXELS*IMAGE_HEIGHT_PIXELS;
+	uint32_t pixels_per_image = IMAGE_WIDTH_PIXELS * IMAGE_HEIGHT_PIXELS;
 
 	// Number of pixel values in the whole data set (image dimensions * number of images)
 	uint64_t nPixels = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS * NUMBER_OF_IMAGES;
@@ -82,14 +82,17 @@ int unpack_12To16( char *INPUT_FILE_PATH, char *OUTPUT_FILE_PATH, int IMAGE_HEIG
 	uint8_t UPPER_BYTE;
 
 	// Inform the user
-	printf("Reading file " KBLU "%s\n" RESET, INPUT_FILE_PATH);
+	printf("\nReading file " KBLU "%s\n" RESET \
+		"Packed data size: " KBLU "%0.2f" RESET " MB\n" \
+		"Unpacked data size: " KBLU "%0.2f" RESET " MB\n", \
+		INPUT_FILE_PATH, n_bytes_packed/1000000, n_bytes_unpacked/1000000);
 
 	// Read the input binary file in 8-bit chunks
 	fread(input_data, (int)sizeof(uint8_t), n_bytes_packed, input_file);
 
 	// Variable to store the number of the image being unpacked.
 	// Use double because this can get large.
-	printf("Unpacking %d images containing %0.0f pixels\n", NUMBER_OF_IMAGES, nPixels);
+	printf("\nUnpacking %d images...\n", NUMBER_OF_IMAGES);
 
 	// Initialize timer variables
 	time_t tstart, tend;
@@ -103,13 +106,17 @@ int unpack_12To16( char *INPUT_FILE_PATH, char *OUTPUT_FILE_PATH, int IMAGE_HEIG
 	// Bit shift offset constant
 	int bit_shift_constant = (2 * bytes_per_val_unpacked * bits_per_byte) - bits_per_val_packed;
 
-	printf("Bit shift constant: %d\n", bit_shift_constant);
-
 	//Progress Bar updates every 1%:
-	int bar_update = NUMBER_OF_IMAGES/50;
+	double bar_update = (double)NUMBER_OF_IMAGES / 50;
+
+	// Image number for use in progress bar.
+	uint32_t imnum;
+
+	// Initialize counter
+	uint32_t k = 0;
 
 	// Extract the 12-bit bytes out of the array
-	for(uint64_t k = 0; k < nPixels; k++){
+	for(k = 0; k < nPixels; k++){
 		
 		// Bit shift
 		bitShift = bit_shift_constant * (k % 2);
@@ -134,31 +141,39 @@ int unpack_12To16( char *INPUT_FILE_PATH, char *OUTPUT_FILE_PATH, int IMAGE_HEIG
 		start_byte = start_byte + 2 * (k % 2) + 1 * (1 - k % 2);
 
 		//Progess bar
-		if(k % imSize == 0){
-			uint32_t imnum = k / imSize;
+		// We should move this into its own function...
+		// void(int current, int final);
+		if((k + 1) % pixels_per_image == 0){
+			imnum = (k + 1) / pixels_per_image;
+		
+			// Print image number
+			printf(KBLU "%d/%d[", imnum, NUMBER_OF_IMAGES);
 			
-			printf("%d/%d[", imnum, NUMBER_OF_IMAGES);
+			// Print progress bar
 			for(int i = 0; i <= 50; i++){
-				if(i <= imnum/bar_update){
+				if(i <= imnum / bar_update){
 					printf("=");
-				}	
-				else{ 
+				}
+				else{
 					printf(" ");
 				}
 			}
+			
+			// Flush the console.
 			printf("] %d%%\r", (imnum * 100) / NUMBER_OF_IMAGES);
 			fflush(stdout);
 		}
 	}
+	
+	
+	// Reset console colors
+	printf(RESET);
+	printf("\nFinal k: %d\nNumber of pixels: %d\n", k, NUMBER_OF_IMAGES * pixels_per_image);
 
-	// End time
-	tend = time(0);
 
-	// Display time
-	printf("\nTime in loop: %f seconds\n", difftime(tend, tstart));
 		
 	// Write the output file
-	printf("Writing %d images to file " KBLU "%s\n" RESET, NUMBER_OF_IMAGES, OUTPUT_FILE_PATH);
+	printf("\n\nWriting %0.2f MB to disk...\n", n_bytes_unpacked / 1000000);
 	fwrite(output_data, (int)sizeof(uint8_t), 2 * nPixels, output_file);
 
 	// Close files
@@ -168,7 +183,13 @@ int unpack_12To16( char *INPUT_FILE_PATH, char *OUTPUT_FILE_PATH, int IMAGE_HEIG
 	// Free memory
 	free(input_data);
 	free(output_data);
+	
+	// End time
+	tend = time(0);
 
+	// Display time
+	printf("\nSaved %d images (%0.2f MB) to file " KBLU "%s" RESET " in %0.2f seconds. \n", NUMBER_OF_IMAGES, n_bytes_unpacked / 1000000, OUTPUT_FILE_PATH, difftime(tend, tstart));
+	
 	// Return success/fail
 	return(0);
 	
