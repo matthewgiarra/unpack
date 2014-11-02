@@ -3,6 +3,7 @@ import os
 import subprocess
 
 # This function parses a .cih file
+# To do: Add functionalty to return the content of non-numeric fields.
 def parse_cih(cih_file_path = None, field_name = None):
        
     # Skip everything if no field was specifed. 
@@ -47,11 +48,15 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
     # Path to the MRAW file.
     mraw_file_path = os.path.join(data_input_dir, mraw_file_name);
     
+    # Print an error message if the path to the Photron cih file doesn't exist.
     if not os.path.exists(cih_file_path):
         print "Error: " + cih_file_path + " does not exist."
     
+    # Print an error message if the path to the Photron mraw file doesn't exist.
     elif not os.path.exists(mraw_file_path):
         print "Error: " + mraw_file_path + " does not exist."
+    
+    # If both the mraw and cih files exist, continue. 
     else:
         
         # Create the output directory if it doesn't already exist.
