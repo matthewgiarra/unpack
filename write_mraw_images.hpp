@@ -22,7 +22,7 @@ using namespace cv;
 // At least that's the plan.
 // USAGE: int write_mraw_12to1write_mraw_12to166( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, std::string OUTPUT_FILE_BASE, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, int START_IMAGE, int END_IMAGE = -1, int PIXEL_BIT_SHIFT = 3, int FILE_DIGITS = 5, std::string FILE_EXTENSION = ".tiff")
 
-int write_mraw_12to1write_mraw_12to166( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, std::string OUTPUT_FILE_BASE, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, int START_IMAGE, int END_IMAGE = -1, int PIXEL_BIT_SHIFT = 3, int FILE_DIGITS = 5, std::string FILE_EXTENSION = ".tiff"){
+int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, std::string OUTPUT_FILE_BASE, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, int START_IMAGE, int END_IMAGE = -1, int PIXEL_BIT_SHIFT = 3, int FILE_DIGITS = 5, std::string FILE_EXTENSION = ".tiff"){
 	
 	// Function prototypes
 	unsigned long long int startByte(int IMAGE_HEIGHT, int IMAGE_WIDTH, int START_IMAGE, int BITS_PER_VAL_PACKED);
@@ -103,6 +103,7 @@ int write_mraw_12to1write_mraw_12to166( std::string INPUT_FILE_PATH, std::string
 	uint8_t *input_data = (uint8_t*) malloc(n_bytes_packed * sizeof(uint8_t));
 	if(!input_data){
 		std::cout << KRED << "ERROR: Out of memory\n" << RESET;
+		return(-1);
 	}
 	
 	// Start byte within the binary to read

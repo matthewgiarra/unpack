@@ -6,7 +6,6 @@
 int main(int argc, char *argv[]){
 	
 	// File paths
-	// char *INPUT_FILE_PATH = argv[1];
 	std::string INPUT_FILE_PATH = argv[1];
 	
 	// Output file directory
