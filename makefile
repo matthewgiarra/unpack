@@ -2,10 +2,12 @@ PROGRAM = mraw2tiff
 DATA_DIR = ~/Documents/School/VT/Research/EFRI/Data/argonne_2014/mng-1-161-A
 CC = g++
 EXT = cpp
-CFLAGS = `pkg-config --cflags --libs opencv`
+CV_CFLAGS = -std=c++11 `pkg-config --cflags opencv`
+CV_LDFLAGS = -L/usr/local/Cellar/opencv/2.4.9/lib		  
+CV_LDLIBS = -lopencv_core  -lopencv_highgui
 
 all:
-	$(CC) $(CFLAGS) $(PROGRAM).$(EXT) -o $(PROGRAM)
+	$(CC) $(CV_CFLAGS) $(CV_LDFLAGS) $(CV_LDLIBS) $(PROGRAM).$(EXT) -o $(PROGRAM)
 	
 clean:
 	@rm -f $(PROGRAM)

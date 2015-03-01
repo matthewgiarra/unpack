@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
-#include <opencv2/highgui/highgui.hpp>
+#include "opencv2/highgui/highgui.hpp"
 
 // Text color definitions
 #define KNRM  "\x1B[0m"
@@ -15,8 +15,12 @@
 #define KWHT  "\x1B[37m"
 #define RESET "\033[0m"
 
-// Namespaces
-using namespace cv;
+// This header file needs to be compiled with the following options:
+// -std=c++11
+
+// Furthermore, it must be compiled using GNU g++ rather than Apple's version.
+// If you get compiler errors about undefined symbols for x86_64 regarding the function "cv::imwrite", you're probably compiling it with Apple's g++. Switching to GNU should fix this.
+// Tested on g++ (Homebrew gcc 4.9.1 --without-multilib) 4.9.1
 
 // This function unpacks 12-bit data into 16-bit data.
 // At least that's the plan.
@@ -69,7 +73,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 
 	// Make an image in opencv
 	// Set image bit depth to 16. Hard code as grayscale. Allow color later.
-	Mat slice(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, CV_16UC1);
+	cv::Mat slice(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, CV_16UC1);
 
 	// Declare pixel intensity
 	uint16_t pixel_val;
@@ -170,7 +174,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 		std::cout << "Saving file: " << KBLU << output_file_path << RESET << "\n";
 		
 		// Write the first image
-		imwrite(output_file_path.c_str(), slice);
+		cv::imwrite(output_file_path.c_str(), slice);
 	}
 	
 	// End time

@@ -17,7 +17,7 @@ def parse_cih(cih_file_path = None, field_name = None):
             # Open the cih file to read
             searchfile = open(cih_file_path);
         
-            # Search the fiel for the field name
+            # Search the field for the field name
             for line in searchfile:            
                 # If the line was found, convert its value to an integer
                 if field_name in line:
