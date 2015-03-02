@@ -64,14 +64,14 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
             os.makedirs(data_output_dir)
             
         # Determine image height and width (in pixels).
-        image_num_rows = parse_cih(cih_file_path = cih_file_path, field_name='Image Height');
-        image_num_columns = parse_cih(cih_file_path = cih_file_path, field_name='Image Width');
+        image_num_rows = parse_cih(cih_file_path = cih_file_path, field_name='Image Height :');
+        image_num_columns = parse_cih(cih_file_path = cih_file_path, field_name='Image Width :');
         
         # Determine number of frames.
-        number_of_images = parse_cih(cih_file_path = cih_file_path, field_name='Original Total Frame');
+        number_of_images = parse_cih(cih_file_path = cih_file_path, field_name='Original Total Frame :');
         
         # Number of digits in file numbers
-        number_of_digits = parse_cih(cih_file_path = cih_file_path, field_name = 'Digits Of File Number');
+        number_of_digits = parse_cih(cih_file_path = cih_file_path, field_name = 'Digits Of File Number :');
         
         # Default to saving all the images.
         if end_image == None:
@@ -99,7 +99,7 @@ data_output_dir = os.path.join(data_input_dir, 'tiff/');
 end_image = 10;
 
 # Path to the compiled unpacking executable 
-exec_path = '/Users/matthewgiarra/Dropbox/School/VT/Research/unpack/mraw2tiff'
+exec_path = '/Users/matthewgiarra/Desktop/unpack/mraw2tiff'
 
 # File name of the Photron CIH file.
 cih_file_name = 'mng-1-161-A.cih'
