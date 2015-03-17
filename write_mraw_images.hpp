@@ -24,9 +24,43 @@
 
 // This function unpacks 12-bit data into 16-bit data.
 // At least that's the plan.
-// USAGE: int write_mraw_12to1write_mraw_12to166( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, std::string OUTPUT_FILE_BASE, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, int START_IMAGE, int END_IMAGE = -1, int PIXEL_BIT_SHIFT = 3, int FILE_DIGITS = 5, std::string FILE_EXTENSION = ".tiff")
+// USAGE: int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, std::string OUTPUT_FILE_BASE, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, int START_IMAGE, int END_IMAGE = -1, int PIXEL_BIT_SHIFT = 3, int FILE_DIGITS = 5)
 
-int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, std::string OUTPUT_FILE_BASE, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, int START_IMAGE, int END_IMAGE = -1, int PIXEL_BIT_SHIFT = 3, int FILE_DIGITS = 5, std::string FILE_EXTENSION = ".tiff"){
+/*
+	INPUTS:
+		INPUT_FILE_PATH (std::string) is the path to the mraw file that will be unpacked to TIFF images.
+		
+		OUTPUT_FILE_DIR (std::string) is the path to the directory in which the unpacked TIFF images will be saved.
+		
+		OUTPUT_FILE_BASE (std::string) is the base-name of the images that will be output. For example, if you want to 
+			output images named "my_image_000001.tiff", "my_image_000002.tiff", then set OUTPUT_FILE_BASE = "my_image_"
+
+	 	IMAGE_HEIGHT_PIXELS (int) is the number of rows in the images. If your images are 1280 pixels wide by 1024 pixels tall, then set IMAGE_HEIGHT_PIXELS = 1024
+
+		IMAGE_WIDTH_PIXELS (int) is the number of columns in the images. If your images are 1280 x 1024, then set IMAGE_WIDTH_PIXELS = 1280
+
+		START_IMAGE (int) is the image number at which you want to start unpacking. If you want to start unpacking at the 50th image in the sequence, set START_IMAGE = 50
+
+		END_IMAGE (int) is the image number at which you want to stop unpacking. Setting END_IMAGE = -1 unpacks all the images from START_IMAGE to the end of the sequence. 
+
+		PIXEL_BIT_SHIFT (int) is the bit-shift of the images that will be saved. Since the MRAW images are saved as 12-bit, but TIFFs are output as 16 bit, the 12 bits
+			that contain the image data can be shifted within the 16 bits available for data storage in the TIFFs. If PIXEL_BIT_SHIFT = 0 then the 12 data bits
+	 		will occupy the first 12 bits of each 16-bit TIFF pixel (bits 0 to 11); if PIXEL_BIT_SHIFT = 1 then the 12 data bits will occupy the second through
+			thirteenth bits of each 16-bit TIFF pixel (bits 1 to 12), etc. In practice this makes your images appear brigter or darker when you open them for
+	 		viewing, but it doesn't affect the data that the images contain. In other words, this setting does NOT truncate your data.
+
+		FILE_DIGITS (int) is the number of digits that will be used to form the file names of the saved TIFF images. For example, if you want to 
+			output images named "my_image_000001.tiff", "my_image_001999.tiff", then set FILE_DIGITS = 6 to reflect the six digits in the file names.
+
+	OUTPUTS:
+		Returns 0 on success.
+
+*/
+
+int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, \
+ 	std::string OUTPUT_FILE_BASE, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, \
+	int START_IMAGE, int END_IMAGE = -1, int PIXEL_BIT_SHIFT = 3, int FILE_DIGITS = 5, \
+	std::string FILE_EXTENSION = ".tiff"){
 	
 	// Function prototypes
 	unsigned long long int startByte(int IMAGE_HEIGHT, int IMAGE_WIDTH, int START_IMAGE, int BITS_PER_VAL_PACKED);
