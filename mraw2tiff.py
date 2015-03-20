@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 import subprocess
 
 # This function parses a .cih file
@@ -30,6 +31,13 @@ def parse_cih(cih_file_path = None, field_name = None):
 # This function parses a CIH file and then uses a precompiled C function to convert an MRAW file to tiffs.
 def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None, data_output_dir = '.', data_output_base_name = None, start_image = 0, end_image = None, bit_shift = 3, exec_path = 'mraw2tiff', file_extension = '.tiff', suppress_messages = 0):
     
+    # Some colors for printing
+    # These are ANSI escape sequences.
+    KRED  = "\x1B[31m";
+    KBLU = "\x1B[34m";
+    KCYN  = "\x1B[36m";
+    RESET = "\033[0m";
+    
     # Default to cih file name same as the data directory name
     if cih_file_name == None:
         cih_file_name = os.path.basename(os.path.normpath(data_input_dir)) + '.cih';
@@ -50,15 +58,15 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
     
     # Print an error message if the path to the Photron cih file doesn't exist.
     if not os.path.exists(cih_file_path):
-        print "Error: " + cih_file_path + " does not exist."
+        print KRED + "Error: " + RESET + cih_file_path + KRED + " not found."
     
     # Print an error message if the path to the Photron mraw file doesn't exist.
     elif not os.path.exists(mraw_file_path):
-        print "Error: " + mraw_file_path + " does not exist."
+        print KRED + "Error: " + RESET + mraw_file_path + KRED + " not found."
         
-    # Throw a bug if the compiled unpacking code doesn't exist
+    # Throw an error if the compiled unpacking code doesn't exist
     elif not os.path.exists(exec_path):
-        print "Error: the compiled code " + exec_path + " does not exist at the path specified.\nCompile using the supplied makefile, e.g., by typing \'make\'"    
+        print KRED + "Error: the compiled code " + RESET + exec_path + KRED + " does not exist at the path specified.\nCompile using the supplied makefile, e.g., by typing \'make\' \n" + RESET   
     
     # If both the mraw and cih files exist, continue. 
     else:
@@ -74,20 +82,31 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
         # Determine number of frames.
         number_of_images = parse_cih(cih_file_path = cih_file_path, field_name='Original Total Frame :');
         
+        # Throw an error if the specified start image is greater than the total number of images recorded.
+        if start_image > number_of_images:
+            print KRED + "Error: Specified start image number (" + RESET + str(start_image) + KRED + ") is greater than the total number of images in the MRAW file (" + RESET + str(number_of_images) + KRED + ")\n" + RESET
+            sys.exit()
+            
+            # Throw an error if the starting number is greater than the ending number.
+        elif ((not(end_image == None) and (start_image > end_image))):
+            print KRED + "Error: specified start image number (" + RESET + str(start_image) + KRED + ") is greater than specified end image number (" + RESET + str(end_image) + KRED + ")\n" + RESET
+            sys.exit()
+        
         # Number of digits in file numbers
         number_of_digits = parse_cih(cih_file_path = cih_file_path, field_name = 'Digits Of File Number :');
         
         # Default to saving all the images.
-        if end_image == None:
-            end_image = start_image + number_of_images - 1;
+        if (end_image == None) or (end_image > number_of_images):
+            end_image = number_of_images - 1;
         
         # Print some outputs
-        print "Start image: " + str(start_image);
-        print "End image: " + str(end_image);
-        print "Image height: " + str(image_num_rows);
-        print "Image width: " + str(image_num_columns);
-        print "Bit shift: " + str(bit_shift);
-        print "Number of digits: " + str(number_of_digits);
+        print KBLU + "\nUnpacking file: " + RESET + mraw_file_path + RESET;  
+        print KBLU + "Start image: " + RESET +  str(start_image);
+        print KBLU + "End image: " + RESET + str(end_image);
+        print KBLU + "Number of images: " + RESET +  str(number_of_images);
+        print KBLU + "Image height: " + RESET +  str(image_num_rows);
+        print KBLU + "Image width: " + RESET +  str(image_num_columns);
+        print KBLU + "Bit shift: " + RESET +  str(bit_shift) + "\n";
         
         # Call the c function to extract the images!
         subprocess.call([exec_path, mraw_file_path, data_output_dir, data_output_base_name, str(image_num_rows), str(image_num_columns), str(start_image), str(end_image), str(bit_shift), str(number_of_digits), file_extension, str(suppress_messages)]);

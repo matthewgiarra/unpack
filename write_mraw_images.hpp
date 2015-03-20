@@ -88,9 +88,6 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	// Number of images to unpack and write
 	int number_of_images = END_IMAGE - START_IMAGE + 1;
 	
-	// Print
-	std::cout << "Start image: " << START_IMAGE << "\tEnd image: " << END_IMAGE << "\tNumber of images: " << number_of_images << "\n";
-		
 	// Number of pixel values in the whole data set (image dimensions * number of images)
 	unsigned long long int nPixels = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS * number_of_images;
 	
@@ -217,10 +214,19 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	// Elapsed time
 	int elapsed = (int)tend - (int)tstart;
 	
-	// Display success
-	std::cout << "Saved " << KGRN << number_of_images \
-		<< RESET << " images in " << KGRN << elapsed << RESET << " seconds\n";
-	std::cout << "Save directory: " << KGRN << OUTPUT_FILE_DIR << RESET << "\n\n";
+	// Print the number of images saved.
+	std::cout << "Saved " << KBLU << number_of_images << RESET;
+	
+	// Decide between singular and plural of "images," because I have nothing better to do.
+	number_of_images > 1 ? std::cout << " images in " : std::cout << " image in ";
+	
+	// Print the time elapsed.
+	std::cout <<  KBLU << elapsed << RESET << " seconds\n";
+	
+	// Print the save directory
+	std::cout << "Save directory: " << KBLU << OUTPUT_FILE_DIR << RESET << "\n\n";
+
+	
 
 	// Close files
 	fclose(input_file);
