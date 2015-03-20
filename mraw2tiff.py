@@ -28,7 +28,7 @@ def parse_cih(cih_file_path = None, field_name = None):
             searchfile.close();
 
 # This function parses a CIH file and then uses a precompiled C function to convert an MRAW file to tiffs.
-def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None, data_output_dir = '.', data_output_base_name = None, start_image = 0, end_image = None, bit_shift = 3, exec_path = 'mraw2tiff'):
+def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None, data_output_dir = '.', data_output_base_name = None, start_image = 0, end_image = None, bit_shift = 3, exec_path = 'mraw2tiff', file_extension = '.tiff', suppress_messages = 0):
     
     # Default to cih file name same as the data directory name
     if cih_file_name == None:
@@ -90,7 +90,7 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
         print "Number of digits: " + str(number_of_digits);
         
         # Call the c function to extract the images!
-        subprocess.call([exec_path, mraw_file_path, data_output_dir, data_output_base_name, str(image_num_rows), str(image_num_columns), str(start_image), str(end_image), str(bit_shift), str(number_of_digits)]);
+        subprocess.call([exec_path, mraw_file_path, data_output_dir, data_output_base_name, str(image_num_rows), str(image_num_columns), str(start_image), str(end_image), str(bit_shift), str(number_of_digits), file_extension, str(suppress_messages)]);
     
 ################
 

@@ -47,6 +47,11 @@
 		FILE_DIGITS (int) is the number of digits that will be used to form the file names of the saved TIFF images. For example, if you want to 
 			output images named "my_image_000001.tiff", "my_image_001999.tiff", then set FILE_DIGITS = 6 to reflect the six digits in the file names.
 
+		SUPPRESS_MESSAGES (int) is binary flag (0 or 1) specifying whether to suppress (1) or allow (0) the console's text updates
+			when each image is saved. Suppressing messages reduces the code's execution speed by about 50%, but provides the 
+	 		comfort of seeing where all your images are going. Recommendation is to allow message when debugging jobfiles
+			and then suppress messages for batch-running jobfiles. The default setting is to not suppress messages, i.e., SUPPRESS_MESSAGES = 0;
+
 	OUTPUTS:
 		Returns 0 on success.
 */
@@ -54,7 +59,7 @@
 int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, \
  	std::string OUTPUT_FILE_BASE, const int IMAGE_HEIGHT_PIXELS, const int IMAGE_WIDTH_PIXELS, \
 	int START_IMAGE, int END_IMAGE = -1, int PIXEL_BIT_SHIFT = 3, int FILE_DIGITS = 5, \
-	std::string FILE_EXTENSION = ".tiff"){
+	std::string FILE_EXTENSION = ".tiff", int SUPPRESS_MESSAGES = 0){
 	
 	// Function prototypes
 	unsigned long long int startByte(int IMAGE_HEIGHT, int IMAGE_WIDTH, int START_IMAGE, int BITS_PER_VAL_PACKED);
@@ -110,7 +115,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 
 	// Number of 8-bit bytes in the raw file
 	unsigned long long int n_bytes_packed = nPixels * bits_per_val_packed / bits_per_byte;
-				
+		
 	// String for number format
 	std::string num_spec = "\%0" + std::to_string(FILE_DIGITS) + (std::string)"d";
 	
@@ -151,25 +156,14 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 
 	// Start a timer
 	tstart = time(0);
-
-	// More declarations
-	unsigned long long int start_bit, start_pixel, end_pixel;
-		
+	
 	// Loop over all the images specified, saving each one as a TIFF.
 	for(int image_num = 0; image_num < number_of_images; image_num++){
 		
 		// Start byte for this image
-		start_byte = startByte(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, image_num + START_IMAGE, bits_per_val_packed);
-		
-		// Start and end pixels
-		start_pixel = pixels_per_image * (image_num + START_IMAGE);
-		end_pixel  	= start_pixel + (pixels_per_image);
-		
-		// Display the start byte, start pixel, and end pixel
-		std::cout << "Start byte: " << start_byte << "\n";
-		std::cout << "Start pixel: " << start_pixel << "\n";
-		std::cout << "End pixel: " << end_pixel << "\n";
-		
+		// start_byte = startByte(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, image_num + START_IMAGE, bits_per_val_packed);
+		start_byte = startByte(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, image_num, bits_per_val_packed);
+						
 		// Loop over all pixels
 		for(unsigned long long int pixel_num = 0; pixel_num < pixels_per_image; pixel_num++){
 
@@ -208,7 +202,10 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 		char *output_file_path = (char*)output_file_path_string.c_str();
 		
 		// Print the file name being saved
-		std::cout << "Saving file: " << KBLU << output_file_path_string << RESET << "\n";
+		// if message suppression is turned off.
+		if(!SUPPRESS_MESSAGES){
+			std::cout << "Saving file: " << KBLU << output_file_path_string << RESET << "\n";
+		}
 		
 		// Write the first image
 		writeTiff_bw16(output_file_path, slice, IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS);
@@ -223,7 +220,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	// Display success
 	std::cout << "Saved " << KGRN << number_of_images \
 		<< RESET << " images in " << KGRN << elapsed << RESET << " seconds\n";
-	std::cout << "Save directory: " << KGRN << OUTPUT_FILE_DIR << RESET << "\n";
+	std::cout << "Save directory: " << KGRN << OUTPUT_FILE_DIR << RESET << "\n\n";
 
 	// Close files
 	fclose(input_file);
@@ -307,17 +304,7 @@ unsigned long long int startByte(const int IMAGE_HEIGHT, const int IMAGE_WIDTH, 
 	
 	// Index of the first relevant 8-byte within the binary
 	unsigned long long int start_byte = floor(BITS_PER_VAL_PACKED * IMAGE_HEIGHT * IMAGE_WIDTH * (long long int)START_IMAGE / bits_per_byte);
-	
-	// if(start_byte > pow(10,10)){
-		// std::cout << "Problem: start_byte is toooo big!" << "\n";
-		// std::cout << "BITS_PER_VAL_PACKED = " << BITS_PER_VAL_PACKED << "\n";
-		// std::cout << "IMAGE_HEIGHT = " << IMAGE_HEIGHT << "\n";
-		// std::cout << "IMAGE_WIDTH = " << IMAGE_WIDTH   << "\n";
-		// std::cout << "START_IMAGE = " << START_IMAGE   << "\n";
-		// std::cout << "start_byte = " << start_byte << "\n\n";
-	// }
 		
-	
 	// Return the start byte number.
 	return start_byte;	
 }

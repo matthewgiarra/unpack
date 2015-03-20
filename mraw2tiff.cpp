@@ -27,9 +27,15 @@ int main(int argc, char *argv[]){
 	
 	// Number of digits in the saved file names.
 	int FILE_DIGITS = atoi(argv[9]);
+	
+	// File extension
+	std::string FILE_EXTENSION = argv[10];
+	
+	// Message suppression flag
+	int SUPPRESS_MESSAGES = atoi(argv[11]);
 		
 	// Extract images
-	write_mraw_12to16(INPUT_FILE_PATH, OUTPUT_FILE_DIR, OUTPUT_FILE_BASE, IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, START_IMAGE, END_IMAGE, PIXEL_BIT_SHIFT, FILE_DIGITS);
+	write_mraw_12to16(INPUT_FILE_PATH, OUTPUT_FILE_DIR, OUTPUT_FILE_BASE, IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, START_IMAGE, END_IMAGE, PIXEL_BIT_SHIFT, FILE_DIGITS, FILE_EXTENSION, SUPPRESS_MESSAGES);
 	
 	// GTFO
 	return(0);
