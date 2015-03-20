@@ -49,7 +49,6 @@
 
 	OUTPUTS:
 		Returns 0 on success.
-∏
 */
 
 int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, \
@@ -103,9 +102,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	//beginning of each byte  that start-bits may occur.
 	const int bit_shift_constant = (2 * bytes_per_val_unpacked * bits_per_byte) - bits_per_val_packed;
 
-	// Make an image in opencv
-	// Set image bit depth to 16. Hard code as grayscale. Allow color later.
-	// cv::Mat slice(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, CV_16UC1);
+	// Allocate memory for a 16-bit "slice" which will hold the image data.
 	uint16_t *slice = new uint16_t[IMAGE_WIDTH_PIXELS * IMAGE_HEIGHT_PIXELS];
 
 	// Declare pixel intensity
@@ -190,7 +187,6 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 			pixel_val = ((((uint16_t) 0 | UPPER_BYTE) << 8  ) | ((uint16_t) 0 | LOWER_BYTE)) << PIXEL_BIT_SHIFT;
 		
 			// Assign the pixel value to the image.
-			// slice.at<uint16_t>(pixel_num) = pixel_val;
 			slice[pixel_num] = pixel_val;
 
 			// Increment the start byte.
@@ -210,7 +206,6 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 		std::cout << "Saving file: " << KBLU << output_file_path_string << RESET << "\n";
 		
 		// Write the first image
-		// cv::imwrite(output_file_path.c_str(), slice);
 		writeTiff_bw16(output_file_path, slice, IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS);
 	}
 	
