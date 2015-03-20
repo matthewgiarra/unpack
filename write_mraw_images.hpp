@@ -2,10 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <ctime>
 #include <string.h>
 #include <math.h>
-#include <vector>
 #include "tiffio.h"
 
 // Text color definitions
@@ -18,9 +16,6 @@
 #define KCYN  "\x1B[36m"
 #define KWHT  "\x1B[37m"
 #define RESET "\033[0m"
-
-// This header file needs to be compiled with the following options:
-// -std=c++11
 
 // This function unpacks 12-bit data into 16-bit data.
 // At least that's the plan.
