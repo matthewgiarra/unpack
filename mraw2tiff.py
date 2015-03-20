@@ -78,11 +78,11 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
     
     # Print an error message if the path to the Photron cih file doesn't exist.
     if not os.path.exists(cih_file_path):
-        print KRED + "Error: " + RESET + cih_file_path + KRED + " not found."
+        print KRED + "Error: " + RESET + cih_file_path + KRED + " not found." + RESET
     
     # Print an error message if the path to the Photron mraw file doesn't exist.
     elif not os.path.exists(mraw_file_path):
-        print KRED + "Error: " + RESET + mraw_file_path + KRED + " not found."
+        print KRED + "Error: " + RESET + mraw_file_path + KRED + " not found." + RESET
         
     # Throw an error if the compiled unpacking code doesn't exist
     elif not os.path.exists(exec_path):
