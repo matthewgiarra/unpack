@@ -22,11 +22,12 @@ import re
 import os
 import sys
 import subprocess
+from os.path import expanduser
 
 # This function parses a .cih file
 # To do: Add functionalty to return the content of non-numeric fields.
 def parse_cih(cih_file_path = None, field_name = None):
-       
+           
     # Skip everything if no field was specifed. 
     if not(field_name == None):    
     
@@ -50,13 +51,19 @@ def parse_cih(cih_file_path = None, field_name = None):
 
 # This function parses a CIH file and then uses a precompiled C function to convert an MRAW file to tiffs.
 def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None, data_output_dir = '.', data_output_base_name = None, start_image = 0, end_image = None, bit_shift = 3, exec_path = 'mraw2tiff', file_extension = '.tiff', suppress_messages = 0):
-    
+        
     # Some colors for printing
     # These are ANSI escape sequences.
     KRED  = "\x1B[31m";
     KBLU = "\x1B[34m";
     KCYN  = "\x1B[36m";
     RESET = "\033[0m";
+    
+    # Expand the paths to the data input directory
+    data_input_dir = os.path.expanduser(data_input_dir);
+    
+    # Expand the path to the data output directory.
+    data_output_dir = os.path.expanduser(data_output_dir);
     
     # Default to cih file name same as the data directory name
     if cih_file_name == None:
@@ -75,7 +82,7 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
     
     # Path to the MRAW file.
     mraw_file_path = os.path.join(data_input_dir, mraw_file_name);
-    
+        
     # Print an error message if the path to the Photron cih file doesn't exist.
     if not os.path.exists(cih_file_path):
         print KRED + "Error: " + RESET + cih_file_path + KRED + " not found." + RESET

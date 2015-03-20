@@ -27,7 +27,7 @@ exec_path = './mraw2tiff'
 # This is the path to the directory containing the
 # Photron MRAW file that you want to unpack, as well
 # as its corresponding .CIH file.
-data_input_dir = '/Users/matthewgiarra/Desktop/photron_images_01'
+data_input_dir = '~/Desktop/photron_images_01'
 # This is the path to the directory in which the output
 # TIFF images will be saved. By default (e.g. as written here)
 # the images will be saved in data_input_dir/tiff. If you want to
@@ -126,7 +126,7 @@ data_output_dir = os.path.join(data_input_dir, 'tiff/');
 suppress_messages = 1;
 
 # Run the python wrapper.
-mraw2tiff(data_input_dir = data_input_dir, data_output_dir = data_output_dir, exec_path = exec_path, suppress_messages = suppress_messages);
+# mraw2tiff(data_input_dir = data_input_dir, data_output_dir = data_output_dir, exec_path = exec_path, suppress_messages = suppress_messages);
 
 
 
