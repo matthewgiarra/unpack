@@ -96,7 +96,7 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
 # File path specifiers, etc
 data_input_dir = '/Users/matthewgiarra/Documents/School/VT/Research/EFRI/analysis/data/Argonne_2014-07-21/grasshopper_xray/mng-1-161-A'
 data_output_dir = os.path.join(data_input_dir, 'tiff/');
-end_image = 0;
+end_image = 100;
 
 # Path to the compiled unpacking executable 
 exec_path = '/Users/matthewgiarra/Desktop/unpack/mraw2tiff'

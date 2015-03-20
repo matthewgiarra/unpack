@@ -62,18 +62,18 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	int START_IMAGE, int END_IMAGE = -1, int PIXEL_BIT_SHIFT = 3, int FILE_DIGITS = 5, \
 	std::string FILE_EXTENSION = ".tiff"){
 	
-	// Function prototype for startByte
+	// Function prototypes
 	unsigned long long int startByte(int IMAGE_HEIGHT, int IMAGE_WIDTH, int START_IMAGE, int BITS_PER_VAL_PACKED);
 	
-	// function prototype for writeTiff_bw16
+	// Function prototype for writeTiff_bw16
 	void writeTiff_bw16(char *output_file_path, uint16_t *image_data, int image_height, int image_width);
 	
 	// Initialize timer variables
 	time_t tstart, tend;
 	
 	// Initialize the two 8-bit values that make up each 16-bit value
-	char LOWER_BYTE;
-	char UPPER_BYTE;
+	uint8_t LOWER_BYTE;
+	uint8_t UPPER_BYTE;
 	
 	// Bit shift variable
 	int bitShift;
@@ -99,8 +99,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	int bits_per_val_packed = 12;
 
 	// Bytes per unpacked value (8 or 16 usually)
-	int bytes_per_val_unpacked = (int)sizeof(uint16_t);
-	// int bytes_per_val_unpacked = (int)sizeof(uint8_t);
+	int bytes_per_val_unpacked = (int)sizeof(uint8_t);
 
 	// Bits per byte (should always be 8)
 	const int bits_per_byte = 8;
@@ -109,12 +108,9 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	//beginning of each byte  that start-bits may occur.
 	const int bit_shift_constant = (2 * bytes_per_val_unpacked * bits_per_byte) - bits_per_val_packed;
 
-	// Declare samples_per_pixel (e.g. the number of channels) equal to one because
-	// we're dealing with grayscale images.
-	const int samples_per_pixel = 1;
-		
 	// Make an image in opencv
 	// Set image bit depth to 16. Hard code as grayscale. Allow color later.
+	// cv::Mat slice(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, CV_16UC1);
 	uint16_t *slice = new uint16_t[IMAGE_WIDTH_PIXELS * IMAGE_HEIGHT_PIXELS];
 
 	// Declare pixel intensity
@@ -146,7 +142,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	}
 
 	// Allocate space in which to open the source data
-	char *input_data = (char*) malloc(n_bytes_packed * sizeof(char));
+	uint8_t *input_data = (uint8_t*) malloc(n_bytes_packed * sizeof(uint8_t));
 	if(!input_data){
 		std::cout << KRED << "ERROR: Out of memory\n" << RESET;
 		return(-1);
@@ -159,7 +155,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	fseek(input_file, start_byte, SEEK_SET);
 
 	// Read the input binary file in 8-bit chunks
-	fread(input_data, (int)sizeof(char), n_bytes_packed, input_file);
+	fread(input_data, (int)sizeof(uint8_t), n_bytes_packed, input_file);
 
 	// Start a timer
 	tstart = time(0);
@@ -177,71 +173,8 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 		start_pixel = pixels_per_image * (image_num + START_IMAGE);
 		end_pixel  	= start_pixel + (pixels_per_image);
 		
-		// Counter
-		unsigned long long int ctr = 0;
-		
-		// Row and colum
-		unsigned long long int pixel_num;
-		
 		// Loop over all pixels
-		for(unsigned int c = 0; c < IMAGE_WIDTH_PIXELS; c++){
-			for(unsigned int r = 0; r < IMAGE_HEIGHT_PIXELS; r++){
-				
-				// Linear index of the current pixel number.
-				pixel_num = c * IMAGE_HEIGHT_PIXELS + r;
-				
-				// printf("Pixel num: %d\n", (int) pixel_num);
-				
-				// Print the start byte
-				// printf("Pixel num: %d\n", (int)pixel_num);
-				
-				// Bit shift
-				bitShift = bit_shift_constant * (pixel_num % 2);
-				
-				// Populate the new bytes
-				// Most significant bits (MSB) in big-endian format.
-				// This shifts the first 8-bit byte to the left by BITSHIFT bits, and then
-				// concatonates it with the first (BITS_PER_BYTE - BITSHIFT) bits of the subsequent byte.
-				UPPER_BYTE = (input_data[start_byte] << bitShift) | (input_data[start_byte + 1] >> (bits_per_byte - bitShift));
-				// UPPER_BYTE = 0;
-				// Least significant bit (LSB) in bit-endian format.
-				// This shifts the second 8-bit byte by (8 - bitShift) bits to the left
-				// and then truncates it to the first (bits_per_val_packed - bits_per_byte) bits
-				// (e.g. bits_per_val_packed = 12; bits_per_byte = 8; so the second 8-bit byte is truncated to the first (12-8) = 4 bits).
-				// LOWER_BYTE = (input_data[start_byte + 1] << bitShift) & (255 << (bits_per_val_packed - bits_per_byte));
-				LOWER_BYTE = 0;
-				
-				// Combine 8-bit bytes into 16-bit byte
-				pixel_val = ((((uint8_t) 0 | UPPER_BYTE) << 8  ) | ((uint8_t) 0 | LOWER_BYTE)) << PIXEL_BIT_SHIFT;
-				// pixel_val = ((((uint8_t) 0 | LOWER_BYTE) << 8  ) | ((uint8_t) 0 | UPPER_BYTE)) << PIXEL_BIT_SHIFT;
-				
-				// Print the pixel value
-				// printf("Pixel value: %d\n", pixel_val);
-			
-				// Assign the pixel value to the image.
-				slice[pixel_num] = pixel_val;
-			
-				// Increment the start byte.
-				start_byte += 2 * (ctr % 2) + 1 * (1 - ctr % 2);
-								
-				// Increment the counter 
-				ctr++;
-				
-			}
-		}
-		
-		/*
-		// Loop over all pixels
-		for(unsigned long long int pixel_num = 0; pixel_num < pixels_per_image; pixel_num++){
-
-			// printf("Pixel value: %d\n", pixel_val);
-			
-			r = pixel_num / IMAGE_WIDTH_PIXELS;
-			c = pixel_num % IMAGE_WIDTH_PIXELS;
-			idx = (r * IMAGE_WIDTH_PIXELS + c);
-			
-			// Print image coordinates
-			// printf("p = %d\tidx = %d\n", (unsigned int)pixel_num, (unsigned int)idx);
+		for(int pixel_num = 0; pixel_num < pixels_per_image; pixel_num++){
 
 			// Bit shift
 			bitShift = bit_shift_constant * (pixel_num % 2);
@@ -251,40 +184,39 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 			// This shifts the first 8-bit byte to the left by BITSHIFT bits, and then
 			// concatonates it with the first (BITS_PER_BYTE - BITSHIFT) bits of the subsequent byte.
 			UPPER_BYTE = (input_data[start_byte] << bitShift) | (input_data[start_byte + 1] >> (bits_per_byte - bitShift));
-		
+
 			// Least significant bit (LSB) in bit-endian format.
 			// This shifts the second 8-bit byte by (8 - bitShift) bits to the left
-			// and then truncates it to the first (bits_per_val_packed - bits_per_byte) bits
+			// and then truncates its to the first (bits_per_val_packed - bits_per_byte) bits
 			// (e.g. bits_per_val_packed = 12; bits_per_byte = 8; so the second 8-bit byte is truncated to the first (12-8) = 4 bits).
 			LOWER_BYTE = (input_data[start_byte + 1] << bitShift) & (255 << (bits_per_val_packed - bits_per_byte));
 
 			// Combine 8-bit bytes into 16-bit byte
-			pixel_val = ((((uint8_t) 0 | UPPER_BYTE) << 8  ) | ((uint8_t) 0 | LOWER_BYTE)) << PIXEL_BIT_SHIFT;
-			
+			pixel_val = ((((uint16_t) 0 | UPPER_BYTE) << 8  ) | ((uint16_t) 0 | LOWER_BYTE)) << PIXEL_BIT_SHIFT;
+		
 			// Assign the pixel value to the image.
-			slice[idx] = pixel_val;
-			
+			// slice.at<uint16_t>(pixel_num) = pixel_val;
+			slice[pixel_num] = pixel_val;
+
 			// Increment the start byte.
 			start_byte += 2 * (pixel_num % 2) + 1 * (1 - pixel_num % 2);
 		}
-		
-		*/
 		
 		// Build save name
 		// This is the string containing the file number (i.e. 00001)
 		sprintf(numstr, num_spec.c_str(), START_IMAGE + image_num);
 
 		// Create the file path to the saved image.
-		std::string output_file_path_string = (OUTPUT_FILE_DIR + OUTPUT_FILE_BASE + std::string(numstr) + FILE_EXTENSION);
+		std::string output_file_path_string = OUTPUT_FILE_DIR + OUTPUT_FILE_BASE + std::string(numstr) + FILE_EXTENSION;
 		
-		char *output_file_path_char = (char*)output_file_path_string.c_str();
-				
+		char *output_file_path = (char*)output_file_path_string.c_str();
+		
 		// Print the file name being saved
 		std::cout << "Saving file: " << KBLU << output_file_path_string << RESET << "\n";
 		
-		// Write the image
-		writeTiff_bw16(output_file_path_char, slice, IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS);
-		
+		// Write the first image
+		// cv::imwrite(output_file_path.c_str(), slice);
+		writeTiff_bw16(output_file_path, slice, IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS);
 	}
 	
 	// End time
@@ -293,11 +225,11 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	// Elapsed time
 	int elapsed = (int)tend - (int)tstart;
 	
-	 // Display success
+	// Display success
 	std::cout << "Saved " << KGRN << number_of_images \
 		<< RESET << " images in " << KGRN << elapsed << RESET << " seconds\n";
 	std::cout << "Save directory: " << KGRN << OUTPUT_FILE_DIR << RESET << "\n";
-	
+
 	// Close files
 	fclose(input_file);
 
@@ -308,7 +240,6 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	return(0);
 
 }
-
 
 // Code for testing the C TIFF library, libtiff
 void writeTiff_bw16(char *output_file_path, uint16_t *image_data, int image_height, int image_width){
