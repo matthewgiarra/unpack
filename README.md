@@ -13,24 +13,55 @@ Once the C++ codes are compiled, you can interact with them using the Python scr
 These codes require LIBTIFF to operate. Mac users can install LIBTIFF using homebrew by running the command:
 
 	brew install libtiff
-	
-Ubuntu users can install LIBTIFF through apt by running the command:
-
-	sudo apt-get install libtiff5
-	
+		
 Users of Purdue's Redhat linux machines are fortunate that libtiff is already installed for them,
 and the makefile should be modified accordingly. To do this, change the line in the makefile that begins 
 with "CFLAGS = ..." to:
 
-	CFLAGS = -I/usr/include -L/usr/lib -ltiff
+	CFLAGS = -std=c++0x -I/usr/local/include -L/usr/lib64 -ltiff
 	
 After that, running the command:
 	
 	make
 	
-"should" compile and link everything correctly.
+"should" compile and link everything correctly. Conveniently, this line is already implemented (and commented out) in the provided makefile, so you just need to un-comment the appropriate CFLAGS line to compile on your system.
+
+
+
+Ubuntu users can install LIBTIFF through apt by running the command:
+
+	sudo apt-get install libtiff5
 	
+However, I haven't been able to compile these codes on Ubuntu; the compiler flags I've tested are
+
+	CFLAGS = -std=c++11 -I/usr/include/x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu -ltiff
+	
+And similarly with 
+
+	CFLAGS = -std=c++0x ...
+	
+The error that I get is that a bunch of functions are undefined:
+
+	mraw2tiff.cpp:(.text+0x91a): undefined reference to `TIFFOpen'
+	mraw2tiff.cpp:(.text+0x937): undefined reference to `TIFFSetField'
+	mraw2tiff.cpp:(.text+0x950): undefined reference to `TIFFSetField'
+	mraw2tiff.cpp:(.text+0x96b): undefined reference to `TIFFSetField'
+	mraw2tiff.cpp:(.text+0x986): undefined reference to `TIFFSetField'
+	mraw2tiff.cpp:(.text+0x9a1): undefined reference to `TIFFSetField'
+	
+However, it appears as though linking the libraries themselves succeeds, because I can successfuly compile a test code
+that includes 
+
+	#include "tiffio.h"
+	#include "tiff.h"
+	
+as long as none of the LIBTIFF functions are called within the test code. So obviously this is not very useful, but perhaps it's a clue as to what's going wrong. 
+
 Windows users, you're on your own unfortunately.
 
 Dependencies:
-	LIBTIFF
+	LIBTIFF 4+
+	
+	
+	
+	
