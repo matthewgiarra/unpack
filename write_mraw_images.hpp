@@ -153,20 +153,25 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	tstart = time(0);
 
 	// More declarations
-	int start_bit, start_pixel, end_pixel;
+	unsigned long long int start_bit, start_pixel, end_pixel;
 		
 	// Loop over all the images specified, saving each one as a TIFF.
 	for(int image_num = 0; image_num < number_of_images; image_num++){
 		
 		// Start byte for this image
-		start_byte = startByte(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, image_num, bits_per_val_packed);
+		start_byte = startByte(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, image_num + START_IMAGE, bits_per_val_packed);
 		
 		// Start and end pixels
 		start_pixel = pixels_per_image * (image_num + START_IMAGE);
 		end_pixel  	= start_pixel + (pixels_per_image);
 		
+		// Display the start byte, start pixel, and end pixel
+		std::cout << "Start byte: " << start_byte << "\n";
+		std::cout << "Start pixel: " << start_pixel << "\n";
+		std::cout << "End pixel: " << end_pixel << "\n";
+		
 		// Loop over all pixels
-		for(int pixel_num = 0; pixel_num < pixels_per_image; pixel_num++){
+		for(unsigned long long int pixel_num = 0; pixel_num < pixels_per_image; pixel_num++){
 
 			// Bit shift
 			bitShift = bit_shift_constant * (pixel_num % 2);
@@ -295,13 +300,23 @@ void writeTiff_bw16(char *output_file_path, uint16_t *image_data, int image_heig
 }
 
 // This function returns the starting bit, at which to read an image
-unsigned long long int startByte(int IMAGE_HEIGHT, int IMAGE_WIDTH, int START_IMAGE, int BITS_PER_VAL_PACKED){
+unsigned long long int startByte(const int IMAGE_HEIGHT, const int IMAGE_WIDTH, int START_IMAGE, const int BITS_PER_VAL_PACKED){
 	
 	// Bits per byte
 	const int bits_per_byte = 8;
 	
 	// Index of the first relevant 8-byte within the binary
-	unsigned long long int start_byte = floor(BITS_PER_VAL_PACKED * IMAGE_HEIGHT * IMAGE_WIDTH * START_IMAGE / bits_per_byte);
+	unsigned long long int start_byte = floor(BITS_PER_VAL_PACKED * IMAGE_HEIGHT * IMAGE_WIDTH * (long long int)START_IMAGE / bits_per_byte);
+	
+	// if(start_byte > pow(10,10)){
+		// std::cout << "Problem: start_byte is toooo big!" << "\n";
+		// std::cout << "BITS_PER_VAL_PACKED = " << BITS_PER_VAL_PACKED << "\n";
+		// std::cout << "IMAGE_HEIGHT = " << IMAGE_HEIGHT << "\n";
+		// std::cout << "IMAGE_WIDTH = " << IMAGE_WIDTH   << "\n";
+		// std::cout << "START_IMAGE = " << START_IMAGE   << "\n";
+		// std::cout << "start_byte = " << start_byte << "\n\n";
+	// }
+		
 	
 	// Return the start byte number.
 	return start_byte;	
