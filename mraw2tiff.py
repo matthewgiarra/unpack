@@ -55,6 +55,10 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
     # Print an error message if the path to the Photron mraw file doesn't exist.
     elif not os.path.exists(mraw_file_path):
         print "Error: " + mraw_file_path + " does not exist."
+        
+    # Throw a bug if the compiled unpacking code doesn't exist
+    elif not os.path.exists(exec_path):
+        print "Error: the compiled code " + exec_path + " does not exist at the path specified.\nCompile using the supplied makefile, e.g., by typing \'make\'"    
     
     # If both the mraw and cih files exist, continue. 
     else:
@@ -89,23 +93,6 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
         subprocess.call([exec_path, mraw_file_path, data_output_dir, data_output_base_name, str(image_num_rows), str(image_num_columns), str(start_image), str(end_image), str(bit_shift), str(number_of_digits)]);
     
 ################
-
-##
-# Below is a script that runs mraw2tiff. This is here temporarily for testing. To do: Move this out into a jobfile
-
-# File path specifiers, etc
-data_input_dir = '/Users/matthewgiarra/Documents/School/VT/Research/EFRI/analysis/data/Argonne_2014-07-21/grasshopper_xray/mng-1-161-A'
-data_output_dir = os.path.join(data_input_dir, 'tiff/');
-end_image = 0;
-
-# Path to the compiled unpacking executable 
-exec_path = '/Users/matthewgiarra/Desktop/unpack/mraw2tiff'
-
-# File name of the Photron CIH file.
-cih_file_name = 'mng-1-161-A.cih'
-
-# Run the python wrapper.
-mraw2tiff(data_input_dir = data_input_dir, data_output_dir = data_output_dir, end_image = end_image, exec_path = exec_path);
 
 
 
