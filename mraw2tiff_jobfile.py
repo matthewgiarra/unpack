@@ -27,7 +27,7 @@ exec_path = './mraw2tiff'
 # This is the path to the directory containing the
 # Photron MRAW file that you want to unpack, as well
 # as its corresponding .CIH file.
-data_input_dir = '/Users/matthewgiarra/Documents/School/VT/Research/EFRI/analysis/data/Argonne_2014-07-21/grasshopper_xray/Photron_20x_calibration_400_lpi_mesh'
+data_input_dir = '~/Desktop/photron_images_01'
 # This is the path to the directory in which the output
 # TIFF images will be saved. By default (e.g. as written here)
 # the images will be saved in data_input_dir/tiff. If you want to
@@ -56,7 +56,7 @@ end_image = 10;
 # and cih_file_name is not specified, then
 # the code will search for a cih file on
 # the path ~/Desktop/my_images/my_images.cih
-cih_file_name = 'Photron_20x_calibration_400_lpi_mesh.cih'
+cih_file_name = 'photron_images_01.cih'
 
 # This is the file name of the Photron MRAW file
 # that you want to unpack.
@@ -68,7 +68,7 @@ cih_file_name = 'Photron_20x_calibration_400_lpi_mesh.cih'
 # and mraw_file_name is not specified, then
 # the code will search for an MRAW file on
 # the path ~/Desktop/my_images/my_images.mraw
-mraw_file_name = 'Photron_20x_calibration_400_lpi_mesh.mraw'
+mraw_file_name = 'photron_images_01.mraw'
 
 # This is the base-name of the images to be output. E.g.,
 # if you want to output images called my_images_00001.tiff, my_images_00002.tiff,
@@ -78,7 +78,7 @@ mraw_file_name = 'Photron_20x_calibration_400_lpi_mesh.mraw'
 # the code will automatically set the base names
 # of the output images to the same name as the
 # data input directory data_input_dir
-data_output_base_name = 'calibration_images_20x_magnification_'
+data_output_base_name = 'photron_images_01_'
 
 # This is the bit-shift of the intensity values for the output images.
 # This shifts the position of the twelve image data bits in the MRAW data
@@ -117,7 +117,7 @@ mraw2tiff(data_input_dir = data_input_dir, cih_file_name = cih_file_name, mraw_f
 # contained in the MRAW file that resides in data_input_dir
 
 # Data input directory
-data_input_dir = '/Users/matthewgiarra/Documents/School/VT/Research/EFRI/analysis/data/Argonne_2014-07-21/grasshopper_xray/mng-1-161-A'
+data_input_dir = '~/Desktop/photron_images_02'
 
 # Data output dir
 data_output_dir = os.path.join(data_input_dir, 'tiff/');

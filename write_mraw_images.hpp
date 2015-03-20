@@ -54,6 +54,7 @@
 #include <time.h>
 #include <string.h>
 #include <math.h>
+#include <stdint.h>
 #include "tiffio.h"
 
 // Text color definitions
@@ -125,7 +126,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	unsigned long long int n_bytes_packed = nPixels * bits_per_val_packed / bits_per_byte;
 		
 	// String for number format
-	std::string num_spec = "\%0" + std::to_string(FILE_DIGITS) + (std::string)"d";
+	std::string num_spec = "\%0" + std::to_string((long long)FILE_DIGITS) + (std::string)"d";
 	
 	// String for the whole file path
 	std::string output_file_path;
