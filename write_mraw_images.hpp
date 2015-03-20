@@ -264,7 +264,7 @@ void writeTiff_bw16(char *output_file_path, uint16_t *image_data, int image_heig
 	TIFFSetField(output_image, TIFFTAG_BITSPERSAMPLE, 16);
 	
 	// Set the origin of the image to the top-left corner.
-	TIFFSetField(output_image, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+	TIFFSetField(output_image, TIFFTAG_ORIENTATION, ORIENTATION_BOTLEFT);
 	
 	// No compression
 	TIFFSetField(output_image, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
