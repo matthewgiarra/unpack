@@ -1,8 +1,23 @@
+// mraw2tiff.cpp
+
+// Matthew N. Giarra
+// Virginia Tech
+// Department of Mechanical Engineering
+// matthew.giarra@gmail.com
+// 19 March 2015
+
+// This function serves as a command-line interface
+// for the function write_mraw_12to16. See the file
+// write_mraw_images.hpp for descriptions of 
+// the variables specified in this function.
+
+// Include directives
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include "write_mraw_images.hpp"
 
+// Main function
 int main(int argc, char *argv[]){
 	
 	// File paths

@@ -1,3 +1,17 @@
+# mraw2tiff_jobfile.py
+#
+# Matthew N. Giarra
+# Virginia Tech
+# Department of Mechanical Engineering
+# matthew.giarra@gmail.com
+# 19 March 2015
+#
+# This Python script serves as a "job file" for specifying 
+# parameters for unpacking 12-bit grayscale Photron MRAW files
+# into a series 16-bit grayscale TIFF images. This is the only
+# script you should need to interact with to successfully unpack
+# MRAW files into TIFF images.
+
 from mraw2tiff import mraw2tiff
 import os
 

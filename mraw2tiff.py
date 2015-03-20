@@ -1,3 +1,23 @@
+# mraw2tiff.py
+
+# Matthew N. Giarra
+# Virginia Tech
+# Department of Mechanical Engineering
+# matthew.giarra@gmail.com
+# 19 March 2015
+
+# This function serves to interface with the compiled 
+# C++ codes for unpacking 12-bit Photron MRAW files
+# into series of 16-bit grayscale TIFF images.
+#
+# This function reads and parses the Photron CIH
+# file corresponding to the MRAW file to be unpacked
+# in order to read image properties such as image
+# dimensions, etc. Then it calls the executable
+# file compiled from the C++ code mraw2tiff.cpp
+# to perform the image unpacking.  
+
+# Import libraries
 import re
 import os
 import sys
@@ -116,7 +136,7 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
         # Call the c function to extract the images!
         subprocess.call([exec_path, mraw_file_path, data_output_dir, data_output_base_name, str(image_num_rows), str(image_num_columns), str(start_image), str(end_image), str(bit_shift), str(number_of_digits), file_extension, str(suppress_messages)]);
     
-################
+
 
 
 

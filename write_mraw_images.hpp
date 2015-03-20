@@ -1,24 +1,15 @@
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <math.h>
-#include "tiffio.h"
+// write_mraw_images.hpp
 
-// Text color definitions
-#define KNRM  "\x1B[0m"
-#define KRED  "\x1B[31m"
-#define KGRN  "\x1B[32m"
-#define KYEL  "\x1B[33m"
-#define KBLU  "\x1B[34m"
-#define KMAG  "\x1B[35m"
-#define KCYN  "\x1B[36m"
-#define KWHT  "\x1B[37m"
-#define RESET "\033[0m"
+// Matthew N. Giarra
+// Virginia Tech
+// Department of Mechanical Engineering
+// matthew.giarra@gmail.com
+// 19 March 2015
 
-// This function unpacks 12-bit data into 16-bit data.
-// At least that's the plan.
+// This header file contains functions to extract the
+// contents of 12-bit packed binary files and
+// save them as a series of 16-bit grayscale TIFF images.
+
 // USAGE: int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, std::string OUTPUT_FILE_BASE, int IMAGE_HEIGHT_PIXELS, int IMAGE_WIDTH_PIXELS, int START_IMAGE, int END_IMAGE = -1, int PIXEL_BIT_SHIFT = 3, int FILE_DIGITS = 5)
 
 /*
@@ -55,6 +46,26 @@
 	OUTPUTS:
 		Returns 0 on success.
 */
+
+// Include directives
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+#include <math.h>
+#include "tiffio.h"
+
+// Text color definitions
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KWHT  "\x1B[37m"
+#define RESET "\033[0m"
 
 int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR, \
  	std::string OUTPUT_FILE_BASE, const int IMAGE_HEIGHT_PIXELS, const int IMAGE_WIDTH_PIXELS, \
@@ -226,8 +237,6 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	// Print the save directory
 	std::cout << "Save directory: " << KBLU << OUTPUT_FILE_DIR << RESET << "\n\n";
 
-	
-
 	// Close files
 	fclose(input_file);
 
@@ -314,4 +323,3 @@ unsigned long long int startByte(const int IMAGE_HEIGHT, const int IMAGE_WIDTH, 
 	// Return the start byte number.
 	return start_byte;	
 }
-// 
