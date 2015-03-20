@@ -88,6 +88,9 @@ suppress_messages = 0;
 # Run the python wrapper.
 mraw2tiff(data_input_dir = data_input_dir, cih_file_name = cih_file_name, mraw_file_name = mraw_file_name, data_output_dir = data_output_dir, data_output_base_name = data_output_base_name, start_image = start_image, end_image = end_image, bit_shift = bit_shift, exec_path = exec_path, suppress_messages=suppress_messages);
 
+
+
+
 ### JOB 2 ###
 # These lines show how to specify an MRAW unpacking job
 # without explicitly defining all of the input variables, and thereby
