@@ -103,10 +103,15 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
         print KBLU + "\nUnpacking file: " + RESET + mraw_file_path + RESET;  
         print KBLU + "Start image: " + RESET +  str(start_image);
         print KBLU + "End image: " + RESET + str(end_image);
-        print KBLU + "Number of images: " + RESET +  str(number_of_images);
+        print KBLU + "Images to unpack: " + RESET +  str(end_image - start_image + 1);
+        print KBLU + "Images in MRAW file: " + RESET + str(number_of_images);
         print KBLU + "Image height: " + RESET +  str(image_num_rows);
         print KBLU + "Image width: " + RESET +  str(image_num_columns);
         print KBLU + "Bit shift: " + RESET +  str(bit_shift) + "\n";
+        
+        # Display a warning message if message suppression is enabled.
+        if suppress_messages:
+            print "Messages suppressed. Unpacking file ...\n"
         
         # Call the c function to extract the images!
         subprocess.call([exec_path, mraw_file_path, data_output_dir, data_output_base_name, str(image_num_rows), str(image_num_columns), str(start_image), str(end_image), str(bit_shift), str(number_of_digits), file_extension, str(suppress_messages)]);
