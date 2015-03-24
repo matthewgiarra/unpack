@@ -272,7 +272,7 @@ void writeTiff_bw16(char *output_file_path, uint16_t *image_data, int image_heig
 	TIFFSetField(output_image, TIFFTAG_BITSPERSAMPLE, 16);
 	
 	// Set the origin of the image to the top-left corner.
-	TIFFSetField(output_image, TIFFTAG_ORIENTATION, ORIENTATION_BOTLEFT);
+	TIFFSetField(output_image, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
 	
 	// No compression
 	TIFFSetField(output_image, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
@@ -299,7 +299,7 @@ void writeTiff_bw16(char *output_file_path, uint16_t *image_data, int image_heig
 	
 	// Write the image to the file one strip at a time
 	for(int row = 0; row < image_height; row++){
-		memcpy(buf, &image_data[(image_height - row - 1) * line_bytes], sizeof(uint16_t) * line_bytes);
+		memcpy(buf, &image_data[(row) * line_bytes], sizeof(uint16_t) * line_bytes);
 		if(TIFFWriteScanline(output_image, buf, row, 0) < 0)
 			break;
 	}
