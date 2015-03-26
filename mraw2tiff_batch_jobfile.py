@@ -1,10 +1,10 @@
-# mraw2tiff_jobfile.py
+# mraw2tiff_batch_jobfile.py
 #
 # Matthew N. Giarra
 # Virginia Tech
 # Department of Mechanical Engineering
 # matthew.giarra@gmail.com
-# 19 March 2015
+# 25 March 2015
 #
 # This Python script serves as a "job file" for specifying 
 # parameters for unpacking 12-bit grayscale Photron MRAW files
@@ -40,14 +40,14 @@ exec_path = './mraw2tiff'
 # the MRAW and CIH file names have to 
 # be the same as the directories in which
 # they reside.
-data_input_repository = '/input/data/repository';
+data_input_repository = '/path/to/input/repository';
 
 # Data output repository.
 # This is the directory in which sub-directories
 # exist (or will be automatically created if
 # they don't already exist) to store the 
 # directories containing the exported TIFF images.
-data_output_repository = '/output/data/repository/';
+data_output_repository = '/path/to/output/repository';
 
 # Specify start and end images.
 # This is temporary for just looking them over.
