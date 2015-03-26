@@ -4,7 +4,7 @@
 // Virginia Tech
 // Department of Mechanical Engineering
 // matthew.giarra@gmail.com
-// 19 March 2015
+// 25 March 2015
 
 // This header file contains functions to extract the
 // contents of 12-bit packed binary files and
@@ -79,15 +79,11 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	// Function prototype for writeTiff_bw16
 	void writeTiff_bw16(char *output_file_path, uint16_t *image_data, int image_height, int image_width);
 	
+	// Function prototype for unpackImage
+	void unpackImage(FILE *INPUT_FILE, uint8_t *PACKED_IMAGE_ARRAY, uint16_t *IMAGE_OUT, unsigned int IMAGE_NUMBER, unsigned int IMAGE_HEIGHT_PIXELS, unsigned int IMAGE_WIDTH_PIXELS, int BITS_PER_VAL_PACKED, int BITS_PER_VAL_UNPACKED, int PIXEL_BIT_SHIFT);
+	
 	// Initialize timer variables
 	time_t tstart, tend;
-	
-	// Initialize the two 8-bit values that make up each 16-bit value
-	uint8_t LOWER_BYTE;
-	uint8_t UPPER_BYTE;
-	
-	// Bit shift variable
-	int bitShift;
 	
 	// Pixels per image
 	int pixels_per_image = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS;
@@ -96,35 +92,22 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	if(END_IMAGE == -1){
 		END_IMAGE = START_IMAGE;
 	}
+	
+	// Bits per val unpacked (should be 16 for 16-bit images)
+	const int bits_per_val_unpacked = 16;
 		
 	// Number of images to unpack and write
 	int number_of_images = END_IMAGE - START_IMAGE + 1;
 	
-	// Number of pixel values in the whole data set (image dimensions * number of images)
-	unsigned long long int nPixels = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS * number_of_images;
-	
 	// Number of bits per pixel value in the input data
 	int bits_per_val_packed = 12;
-
-	// Bytes per unpacked value (8 or 16 usually)
-	int bytes_per_val_unpacked = (int)sizeof(uint8_t);
 
 	// Bits per byte (should always be 8)
 	const int bits_per_byte = 8;
 	
-	// Bit shift offset constant. This is the offset from the 
-	//beginning of each byte  that start-bits may occur.
-	const int bit_shift_constant = (2 * bytes_per_val_unpacked * bits_per_byte) - bits_per_val_packed;
-
 	// Allocate memory for a 16-bit "slice" which will hold the image data.
 	uint16_t *slice = new uint16_t[IMAGE_WIDTH_PIXELS * IMAGE_HEIGHT_PIXELS];
 
-	// Declare pixel intensity
-	uint16_t pixel_val;
-
-	// Number of 8-bit bytes in the raw file
-	unsigned long long int n_bytes_packed = nPixels * bits_per_val_packed / bits_per_byte;
-		
 	// String for number format
 	std::string num_spec = "\%0" + std::to_string((long long)FILE_DIGITS) + (std::string)"d";
 	
@@ -139,67 +122,32 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 
 	// Open the input file for reading
 	input_file = fopen(INPUT_FILE_PATH.c_str(), "r");
-	
+
 	// Bug out if the input file isn't found
 	if(input_file == NULL){
 		// Display an error if the mraw file wasn't loaded successfully
 		std::cout << KRED << "Error: failed to load file " << KBLU << INPUT_FILE_PATH << RESET << "\n";
 		return(-1);
 	}
-
-	// Allocate space in which to open the source data
-	uint8_t *input_data = (uint8_t*) malloc(n_bytes_packed * sizeof(uint8_t));
-	if(!input_data){
+	
+	// Number of 8-bit bytes in the raw file
+	unsigned long long int n_bytes_packed = pixels_per_image * bits_per_val_packed / bits_per_byte;
+	
+	// Allocate space to hold each extracted image
+	uint8_t *packed_image_array = (uint8_t*) malloc(n_bytes_packed * sizeof(uint8_t));
+	if(!packed_image_array){
 		std::cout << KRED << "ERROR: Out of memory\n" << RESET;
 		return(-1);
 	}
-	
-	// Start byte within the binary to read
-	unsigned long long int start_byte = startByte(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, START_IMAGE, bits_per_val_packed);
-
-	// Read from the middle of the input file
-	fseek(input_file, start_byte, SEEK_SET);
-
-	// Read the input binary file in 8-bit chunks
-	fread(input_data, (int)sizeof(uint8_t), n_bytes_packed, input_file);
 
 	// Start a timer
 	tstart = time(0);
 	
 	// Loop over all the images specified, saving each one as a TIFF.
-	for(int image_num = 0; image_num < number_of_images; image_num++){
+	for(unsigned int image_num = 0; image_num < number_of_images; image_num++){
 		
-		// Start byte for this image
-		// start_byte = startByte(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, image_num + START_IMAGE, bits_per_val_packed);
-		start_byte = startByte(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, image_num, bits_per_val_packed);
-						
-		// Loop over all pixels
-		for(unsigned long long int pixel_num = 0; pixel_num < pixels_per_image; pixel_num++){
-
-			// Bit shift
-			bitShift = bit_shift_constant * (pixel_num % 2);
-			
-			// Populate the new bytes
-			// Most significant bits (MSB) in big-endian format.
-			// This shifts the first 8-bit byte to the left by BITSHIFT bits, and then
-			// concatonates it with the first (BITS_PER_BYTE - BITSHIFT) bits of the subsequent byte.
-			UPPER_BYTE = (input_data[start_byte] << bitShift) | (input_data[start_byte + 1] >> (bits_per_byte - bitShift));
-
-			// Least significant bit (LSB) in bit-endian format.
-			// This shifts the second 8-bit byte by (8 - bitShift) bits to the left
-			// and then truncates its to the first (bits_per_val_packed - bits_per_byte) bits
-			// (e.g. bits_per_val_packed = 12; bits_per_byte = 8; so the second 8-bit byte is truncated to the first (12-8) = 4 bits).
-			LOWER_BYTE = (input_data[start_byte + 1] << bitShift) & (255 << (bits_per_val_packed - bits_per_byte));
-
-			// Combine 8-bit bytes into 16-bit byte
-			pixel_val = ((((uint16_t) 0 | UPPER_BYTE) << 8  ) | ((uint16_t) 0 | LOWER_BYTE)) << PIXEL_BIT_SHIFT;
-		
-			// Assign the pixel value to the image.
-			slice[pixel_num] = pixel_val;
-
-			// Increment the start byte.
-			start_byte += 2 * (pixel_num % 2) + 1 * (1 - pixel_num % 2);
-		}
+		// Unpack an image
+		unpackImage(input_file, packed_image_array, slice, START_IMAGE + image_num, IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, bits_per_val_packed, bits_per_val_unpacked, PIXEL_BIT_SHIFT);
 		
 		// Build save name
 		// This is the string containing the file number (i.e. 00001)
@@ -218,6 +166,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 		
 		// Write the first image
 		writeTiff_bw16(output_file_path, slice, IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS);
+		
 	}
 	
 	// End time
@@ -242,7 +191,7 @@ int write_mraw_12to16( std::string INPUT_FILE_PATH, std::string OUTPUT_FILE_DIR,
 	fclose(input_file);
 
 	// Free memory
-	free(input_data);
+	free(packed_image_array);
 	
 	// GTFO
 	return(0);
@@ -323,4 +272,78 @@ unsigned long long int startByte(const int IMAGE_HEIGHT, const int IMAGE_WIDTH, 
 		
 	// Return the start byte number.
 	return start_byte;	
+}
+
+// This function unpacks a single image of bit depth BITS_PER_VAL_PACKED into an image of obit depth BITS_PER_VAL_UNPACKED.
+void unpackImage(FILE *INPUT_FILE, uint8_t *PACKED_IMAGE_ARRAY, uint16_t *IMAGE_OUT, unsigned int IMAGE_NUMBER, unsigned int IMAGE_HEIGHT_PIXELS, unsigned int IMAGE_WIDTH_PIXELS, int BITS_PER_VAL_PACKED = 12, int BITS_PER_VAL_UNPACKED = 16, int PIXEL_BIT_SHIFT = 3){
+	
+	// Declare pixel intensity
+	uint16_t pixel_val;
+	
+	// Initialize the two 8-bit values that make up each 16-bit value
+	uint8_t lower_byte;
+	uint8_t upper_byte;
+	
+	// Bit shift variable
+	int bitShift;
+	
+	// Bits per byte (should always be 8)
+	const int bits_per_byte = 8;
+	
+	// Byte per value unpacked.
+	const int bytes_per_val_unpacked = (int)sizeof(uint8_t);
+		
+	// Number of pixels
+	unsigned long long int number_of_pixels = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS;
+	
+	// Number of 8-bit bytes in each raw image
+	unsigned long long int n_bytes_packed = IMAGE_HEIGHT_PIXELS * IMAGE_WIDTH_PIXELS * BITS_PER_VAL_PACKED / bits_per_byte;
+	
+	// Bit shift offset constant. This is the offset from the 
+	//beginning of each byte  that start-bits may occur.
+	const int bit_shift_constant = (2 * bytes_per_val_unpacked * bits_per_byte) - BITS_PER_VAL_PACKED;
+	
+	// Start byte within the binary to read
+	unsigned long long int global_start_byte = startByte(IMAGE_HEIGHT_PIXELS, IMAGE_WIDTH_PIXELS, IMAGE_NUMBER, BITS_PER_VAL_PACKED);
+
+	// Start byte within the image matrix to read.
+	unsigned long long int local_start_byte = 0;
+
+	// Read from the middle of the input file
+	fseek(INPUT_FILE, global_start_byte, SEEK_SET);
+	
+	// Read the input binary file in 8-bit chunks
+	fread(PACKED_IMAGE_ARRAY, sizeof(uint8_t), n_bytes_packed, INPUT_FILE);
+		
+	// Loop over all pixels
+	for(unsigned long long int pixel_num = 0; pixel_num < number_of_pixels; pixel_num++){
+
+		// Bit shift
+		bitShift = bit_shift_constant * (pixel_num % 2);
+		
+		// Populate the new bytes
+		// Most significant bits (MSB) in big-endian format.
+		// This shifts the first 8-bit byte to the left by BITSHIFT bits, and then
+		// concatonates it with the first (BITS_PER_BYTE - BITSHIFT) bits of the subsequent byte.
+		// upper_byte = (PACKED_IMAGE_ARRAY[start_byte] << bitShift) | (PACKED_IMAGE_ARRAY[start_byte + 1] >> (bits_per_byte - bitShift));
+		upper_byte = (PACKED_IMAGE_ARRAY[local_start_byte] << bitShift) | (PACKED_IMAGE_ARRAY[local_start_byte + 1] >> (bits_per_byte - bitShift));
+		
+		// Least significant bit (LSB) in bit-endian format.
+		// This shifts the second 8-bit byte by (8 - bitShift) bits to the left
+		// and then truncates its to the first (bits_per_val_packed - bits_per_byte) bits
+		// (e.g. bits_per_val_packed = 12; bits_per_byte = 8; so the second 8-bit byte is truncated to the first (12-8) = 4 bits).
+		// lower_byte = (PACKED_IMAGE_ARRAY[start_byte + 1] << bitShift) & (255 << (BITS_PER_VAL_PACKED - bits_per_byte));
+		lower_byte = (PACKED_IMAGE_ARRAY[local_start_byte + 1] << bitShift) & (255 << (BITS_PER_VAL_PACKED - bits_per_byte));
+		
+		// Combine 8-bit bytes into 16-bit byte
+		pixel_val = ((((uint16_t) 0 | upper_byte) << 8  ) | ((uint16_t) 0 | lower_byte)) << PIXEL_BIT_SHIFT;
+				
+		// Assign the pixel value to the image.
+		IMAGE_OUT[pixel_num] = pixel_val;
+		
+		// Increment the start byte.
+		local_start_byte += 2 * (pixel_num % 2) + 1 * (1 - pixel_num % 2);
+
+	}
+			
 }
