@@ -23,6 +23,7 @@ import os
 import sys
 import subprocess
 from os.path import expanduser
+import pdb
 
 # This function parses a .cih file
 # To do: Add functionalty to return the content of non-numeric fields.
@@ -33,7 +34,7 @@ def parse_cih(cih_file_path = None, field_name = None):
     
             # Bug out if file name not specifed
             if cih_file_path == None:
-                print "Error: specify an input file path.";
+                print("Error: specify an input file path.")
                 return None;
                 
             # Open the cih file to read
@@ -63,7 +64,7 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
     data_input_dir = os.path.expanduser(data_input_dir);
     
     # Expand the path to the data output directory.
-    data_output_dir = os.path.expanduser(data_output_dir);
+    data_output_dir = os.path.join(os.path.expanduser(data_output_dir), '');
     
     # Default to cih file name same as the data directory name
     if cih_file_name == None:
@@ -75,25 +76,25 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
         
     # Default to data base name same as data directory name
     if data_output_base_name == None:
-        data_output_base_name = os.path.basename(os.path.normpath(data_input_dir)) + '_';
+        data_output_base_name = os.path.basename(os.path.normpath(data_input_dir));
     
     # Path to the CIH file.
     cih_file_path = os.path.join(data_input_dir, cih_file_name);
     
     # Path to the MRAW file.
     mraw_file_path = os.path.join(data_input_dir, mraw_file_name);
-        
+         
     # Print an error message if the path to the Photron cih file doesn't exist.
     if not os.path.exists(cih_file_path):
-        print KRED + "Error: " + RESET + cih_file_path + KRED + " not found." + RESET
+        print(KRED + "Error: " + RESET + cih_file_path + KRED + " not found." + RESET)
     
     # Print an error message if the path to the Photron mraw file doesn't exist.
     elif not os.path.exists(mraw_file_path):
-        print KRED + "Error: " + RESET + mraw_file_path + KRED + " not found." + RESET
+        print(KRED + "Error: " + RESET + mraw_file_path + KRED + " not found." + RESET)
         
     # Throw an error if the compiled unpacking code doesn't exist
     elif not os.path.exists(exec_path):
-        print KRED + "Error: the compiled code " + RESET + exec_path + KRED + " does not exist at the path specified.\nCompile using the supplied makefile, e.g., by typing \'make\' \n" + RESET   
+        print(KRED + "Error: the compiled code " + RESET + exec_path + KRED + " does not exist at the path specified.\nCompile using the supplied makefile, e.g., by typing \'make\' \n" + RESET)
     
     # If both the mraw and cih files exist, continue. 
     else:
@@ -111,12 +112,12 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
         
         # Throw an error if the specified start image is greater than the total number of images recorded.
         if start_image > number_of_images:
-            print KRED + "Error: Specified start image number (" + RESET + str(start_image) + KRED + ") is greater than the total number of images in the MRAW file (" + RESET + str(number_of_images) + KRED + ")\n" + RESET
+            print(KRED + "Error: Specified start image number (" + RESET + str(start_image) + KRED + ") is greater than the total number of images in the MRAW file (" + RESET + str(number_of_images) + KRED + ")\n" + RESET)
             sys.exit()
             
             # Throw an error if the starting number is greater than the ending number.
         elif ((not(end_image == None) and (start_image > end_image))):
-            print KRED + "Error: specified start image number (" + RESET + str(start_image) + KRED + ") is greater than specified end image number (" + RESET + str(end_image) + KRED + ")\n" + RESET
+            print(KRED + "Error: specified start image number (" + RESET + str(start_image) + KRED + ") is greater than specified end image number (" + RESET + str(end_image) + KRED + ")\n" + RESET)
             sys.exit()
         
         # Number of digits in file numbers
@@ -127,18 +128,18 @@ def mraw2tiff(data_input_dir = '.', cih_file_name = None, mraw_file_name = None,
             end_image = number_of_images - 1;
         
         # Print some outputs
-        print KBLU + "\nUnpacking file: " + RESET + mraw_file_path + RESET;  
-        print KBLU + "Start image: " + RESET +  str(start_image);
-        print KBLU + "End image: " + RESET + str(end_image);
-        print KBLU + "Images to unpack: " + RESET +  str(end_image - start_image + 1);
-        print KBLU + "Images in MRAW file: " + RESET + str(number_of_images);
-        print KBLU + "Image height: " + RESET +  str(image_num_rows);
-        print KBLU + "Image width: " + RESET +  str(image_num_columns);
-        print KBLU + "Bit shift: " + RESET +  str(bit_shift) + "\n";
+        print(KBLU + "\nUnpacking file: " + RESET + mraw_file_path + RESET);  
+        print( KBLU + "Start image: " + RESET +  str(start_image));
+        print(KBLU + "End image: " + RESET + str(end_image));
+        print(KBLU + "Images to unpack: " + RESET +  str(end_image - start_image + 1));
+        print(KBLU + "Images in MRAW file: " + RESET + str(number_of_images));
+        print(KBLU + "Image height: " + RESET +  str(image_num_rows));
+        print(KBLU + "Image width: " + RESET +  str(image_num_columns));
+        print(KBLU + "Bit shift: " + RESET +  str(bit_shift) + "\n");
         
         # Display a warning message if message suppression is enabled.
         if suppress_messages:
-            print "Messages suppressed. Unpacking file ...\n"
+            print("Messages suppressed. Unpacking file ...\n")
         
         # Call the c function to extract the images!
         subprocess.call([exec_path, mraw_file_path, data_output_dir, data_output_base_name, str(image_num_rows), str(image_num_columns), str(start_image), str(end_image), str(bit_shift), str(number_of_digits), file_extension, str(suppress_messages)]);
