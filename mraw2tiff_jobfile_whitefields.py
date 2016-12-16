@@ -4,31 +4,13 @@
 # Virginia Tech
 # Department of Mechanical Engineering
 # matthew.giarra@gmail.com
-# 15 Dec 2016
+# 19 March 2015
 #
 # This Python script serves as a "job file" for specifying 
 # parameters for unpacking 12-bit grayscale Photron MRAW files
 # into a series 16-bit grayscale TIFF images. This is the only
 # script you should need to interact with to successfully unpack
 # MRAW files into TIFF images.
-#
-# This particular file is for exporting x-ray
-# images of grasshopper heart flow
-# captured by Matthew Giarra around
-# June 5, 2016. The data are described
-# in his notebook labeled mng-2
-# The names of the trials refer
-# to the pages of the notebook
-# on which they are described. 
-# For example, trial mng-2-071-C
-# is described in notebook 
-# mng-2, page 71, trial C, 
-# and the names of the trials
-# in the notebook correspond with the
-# names here.
-
-
-
 
 from mraw2tiff import mraw2tiff
 import os
@@ -54,7 +36,7 @@ start_image = 0;
 # To export all the images in the MRAW file without
 # a-priori specifying the end image number,
 # set end_image = None
-end_image = None;
+end_image = 100;
 
 # This is the bit-shift of the intensity values for the output images.
 # This shifts the position of the twelve image data bits in the MRAW data
@@ -90,18 +72,11 @@ trial_names = [];
 ##############
 ##############
 
-# #
-animal_num = 1;
-trial_name = 'mng-2-071-C';
-animal_nums.append(animal_num);
-trial_names.append(trial_name);
-
 # # #
 animal_num = 1;
-trial_name = 'mng-2-071-E';
+trial_name = 'mng-2-071-F_white_field';
 animal_nums.append(animal_num);
 trial_names.append(trial_name);
-
 
 
 ##############
@@ -112,7 +87,7 @@ trial_names.append(trial_name);
 
 # # # #
 animal_num = 2;
-trial_name = 'mng-2-071-J';
+trial_name = 'mng-2-071-K_white_field';
 animal_nums.append(animal_num);
 trial_names.append(trial_name);
 
@@ -126,19 +101,7 @@ trial_names.append(trial_name);
 
 # # # #
 animal_num = 3;
-trial_name = 'mng-2-072-B';
-animal_nums.append(animal_num);
-trial_names.append(trial_name);
-
-# # # #
-animal_num = 3;
-trial_name = 'mng-2-072-C';
-animal_nums.append(animal_num);
-trial_names.append(trial_name);
-
-# # # #
-animal_num = 3;
-trial_name = 'mng-2-072-D';
+trial_name = 'mng-2-072-E_white_field';
 animal_nums.append(animal_num);
 trial_names.append(trial_name);
 
@@ -150,20 +113,12 @@ trial_names.append(trial_name);
 ##############
 ##############
 
-# # # #
-animal_num = 4;
-trial_name = 'mng-2-072-F';
-animal_nums.append(animal_num);
-trial_names.append(trial_name);
-
 
 # # # #
 animal_num = 4;
-trial_name = 'mng-2-072-G';
+trial_name = 'mng-2-072-K_white_field';
 animal_nums.append(animal_num);
 trial_names.append(trial_name);
-
-
 
 
 ##############
@@ -174,11 +129,9 @@ trial_names.append(trial_name);
 
 # # # #
 animal_num = 5;
-trial_name = 'mng-2-073-C';
+trial_name = 'mng-2-073-E_white_field';
 animal_nums.append(animal_num);
 trial_names.append(trial_name);
-
-
 
 
 ##############
@@ -189,17 +142,9 @@ trial_names.append(trial_name);
 
 # # # #
 animal_num = 6;
-trial_name = 'mng-2-073-F';
+trial_name = 'mng-2-073-I_white_field';
 animal_nums.append(animal_num);
 trial_names.append(trial_name);
-
-# # # #
-animal_num = 6;
-trial_name = 'mng-2-073-G';
-animal_nums.append(animal_num);
-trial_names.append(trial_name);
-
-
 
 
 ##############
@@ -210,15 +155,10 @@ trial_names.append(trial_name);
 
 # # # #
 animal_num = 7;
-trial_name = 'mng-2-073-L';
+trial_name = 'mng-2-073-N_white_field';
 animal_nums.append(animal_num);
 trial_names.append(trial_name);
 
-# # # #
-animal_num = 7;
-trial_name = 'mng-2-073-M';
-animal_nums.append(animal_num);
-trial_names.append(trial_name);
 
 # Count the number of trials
 num_trials = len(trial_names)
